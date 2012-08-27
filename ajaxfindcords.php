@@ -1,20 +1,23 @@
 <?php
+$ini_settings = parse_ini_file('./settings.ini',true);
+if(isset($ini_settings['Fiji'])){
+    $FIJI_MACRO_PATH = $ini_settings['Fiji']['Fiji_Macro_Path'];
+    $Output_Dir = $ini_settings['Fiji']['CSV_Output_Dir'];
+    $Shell_Path = $ini_settings['Fiji']['Shell_Path_For_Macro'];
+    $LAUNCH_MACRO = $ini_settings['Fiji']['Launch_Macro_Location'];
+}else{
+    die("YOU MUST SET YOUR DATABASE SETTINGS IN: ./settings.ini");
+}
 
-/*
- * To change this template, choose Tools | Templates
- xvfb-run fiji ./html5test/leaf.jpg -run "my test"
- * 
 
- *
- */
 $output_f = 'tmp_'.uniqid();
 $noise = $_GET['noise'];
 $current_leaf = '/home/eglabdb/html5test/pics/'.$_GET['curr_file'].'.jpg';
-$output_file = '/tmp/'.$output_f.'.csv';
+$output_file = $Output_Dir.'/'.$output_f.'.csv';
 $string = 'import ij.IJ;ip = IJ.getImage();while(null == ip){ip = IJ.getImage();}IJ.run(ip,"Find Maxima...","noise='.$noise.' output=List");IJ.saveAs("Results","'.$output_file.'");';
-exec("echo '".$string."' > /usr/lib/fiji/plugins/my_test.bsh");
+exec("echo '".$string."' > $FIJI_MACRO_PATH");
 sleep(1);
-$exec_string = '/bin/sh /var/www/tricomeproject/upload/runthis.sh '.$current_leaf;
+$exec_string = $Shell_Path.' '.$LAUNCH_MACRO.' '.$current_leaf;
 $pid = exec($exec_string); 
 while(!file_exists($output_file)){
     sleep(1);
