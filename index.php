@@ -84,26 +84,6 @@ reset($genotypes);
         xmlhttp.open("GET","leafsbygenotype.php"+sendstr,true);
         xmlhttp.send();
     }
-    /*
-    function updateShapeImg(){
-        var shapes = document.getElementById('shapes');
-        var shapes_id = shapes.options[shapes.options.selectedIndex].value;
-        if(shapes_id == -1 || shapes_id == '-1') return;
-        var xmlhttp;
-        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function(){
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                document.getElementById('shapeimg').innerHTML=xmlhttp.responseText;
-            }
-        }
-        var sendstr = "?shape_id="+shapes_id;
-        xmlhttp.open("GET","getShapeThumbImage.php"+sendstr,true);
-        xmlhttp.send();
-    }*/
 </script>
 
 View All Leafs In Genotype:

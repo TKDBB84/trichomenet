@@ -37,15 +37,11 @@ if(isset($_POST['additional_boxes'])){
     $additional_boxes = $_POST['additional_boxes'];
 }else
     $additional_boxes = 0;
-    
-if(isset($_POST['show_bar_graph'])){
-    if($_POST['show_bar_graph'] == 1 || $_POST['show_bar_graph'] == "1")
-        $SHOW_BIN_GRAPH = TRUE;
-    else
-        $SHOW_BIN_GRAPH = FALSE;
-}else
-    $SHOW_BIN_GRAPH = TRUE;
 
+$SHOW_BIN_GRAPH = TRUE;
+if(isset($_POST['show_bar_graph']))
+    if( !$_POST['show_bar_graph'] == 1 && !$_POST['show_bar_graph'] == "1")
+        $SHOW_BIN_GRAPH = FALSE;
 
     
     //num_boxes
@@ -53,19 +49,15 @@ if(isset($_POST['num_boxes_x'])){
     $num_boxes_x = $_POST['num_boxes_x'];
 }else
     $num_boxes_x = 16;
+
 if(isset($_POST['num_boxes_y'])){
     $num_boxes_y = $_POST['num_boxes_y'];
 }else
     $num_boxes_y = 16;   
     
-
-if(isset($_POST['edge'])){
-    if($_POST['edge'] == 0 || $_POST['edge'] == "0")
+$SHOW_LEAF_EDGE = TRUE; 
+if(isset($_POST['edge']) && ($_POST['edge'] == 0 || $_POST['edge'] == "0"))
         $SHOW_LEAF_EDGE = FALSE;
-    else
-        $SHOW_LEAF_EDGE = TRUE;
-}else
-    $SHOW_LEAF_EDGE = TRUE;
 
 if(isset($_POST['count_outer'])){
     if($_POST['count_outer'] == 1 || $_POST['count_outer'] == "1"){
@@ -78,13 +70,9 @@ if(isset($_POST['count_outer'])){
     $COUNT_OUTER = FALSE;
 }
 
-if(isset($_POST['show_values']))
-    if($_POST['show_values'] == 1 || $_POST['show_values'] == "1")
+$SHOW_VALUES = FALSE;
+if(isset($_POST['show_values']) && ($_POST['show_values'] == 1 || $_POST['show_values'] == "1"))
         $SHOW_VALUES = TRUE;
-    else
-        $SHOW_VALUES = FALSE;
-else
-    $SHOW_VALUES = FALSE;
 
 if(isset($_POST['bar_range']))
     $bar_range = $_POST['bar_range'];
@@ -242,10 +230,9 @@ $bins_per_leaf = array();
 $Bins = array();
 
 $sql_cross_join_both_temp_tables->execute() or die($sql_cross_join_both_temp_tables->queryString.'lala<br/><br/>'.var_dump($sql_cross_join_both_temp_tables->errorInfo()));
-//die($sql_cross_join_both_temp_tables->debugDumpParams());
+
     //~~~~~~~~~~~~~~~~FIND AVERAGE DISTANCE AND BIN SIZES~~~~~~~~~~~~~~~~~~~~~~~
     while($row = $sql_cross_join_both_temp_tables->fetch(PDO::FETCH_ASSOC)){
-        //die(var_dump($row));
         if( !isset($bins_per_leaf[$row['leaf_id']]) ) $bins_per_leaf[$row['leaf_id']] = array();
         $distance = $row['distance'];
         $NUM_OF_BINS = count($BIN_SIZES);
@@ -331,7 +318,7 @@ foreach($leaf_ids as $leaf_id){
         }
         if(!isset($all_next_neighbor_dist[$leaf_id])) $all_next_neighbor_dist[$leaf_id] = 0;
         $all_next_neighbor_dist[$leaf_id] += $distance;
-        if(!isset($num_next_neighbor_dists[$row['leaf_id']])) $num_next_neighbor_dists[$leaf_id] = 0;
+        if(!isset($num_next_neighbor_dists[$leaf_id])) $num_next_neighbor_dists[$leaf_id] = 0;
         $num_next_neighbor_dists[$leaf_id]++;
     }
 }
@@ -385,18 +372,22 @@ foreach($leaf_ids as $leaf_id){
                 $cord['y'] = $row['yCord'];
                 if($j == 0 && $i == 0){
                     if($cord['x'] <= $x_divs[$j] && $cord['y'] <= $y_divs[$i]){
+                        if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
                     }
                 }elseif($j == 0){
                     if($cord['x'] <= $x_divs[$j] && ($cord['y'] <= $y_divs[$i] && $cord['y'] > $y_divs[$i-1])){
+                        if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
                     }
                 }elseif($i == 0){
                     if(($cord['x'] <= $x_divs[$j] && $cord['x'] > $x_divs[$j-1]) && $cord['y'] <= $y_divs[$i]){
+                        if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
                     }
                 }else{
                     if(($cord['x'] <= $x_divs[$j] && $cord['x'] > $x_divs[$j-1]) && ($cord['y'] <= $y_divs[$i] && $cord['y'] > $y_divs[$i-1])){
+                        if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
                     }
                 }
@@ -419,15 +410,17 @@ foreach($leaf_ids as $leaf_id){
             if(!isset($min_in_box[$i])) $min_in_box[$i] = 999999;
             if($boxes_by_leaf[$leaf_id][$i] > $max_in_box[$i]) $max_in_box[$i] = $boxes_by_leaf[$leaf_id][$i];
             if($boxes_by_leaf[$leaf_id][$i] < $min_in_box[$i]) $min_in_box[$i] = $boxes_by_leaf[$leaf_id][$i];
+            if(!isset($all_boxes[$i])) $all_boxes[$i]=0;
             $all_boxes[$i] += $boxes_by_leaf[$leaf_id][$i];
+            if(!isset($std_div_by_leaf[$leaf_id])) $std_div_by_leaf[$leaf_id]=0;
             $std_div_by_leaf[$leaf_id] += $boxes_by_leaf[$leaf_id][$i];
         }
     }
-    $std_div_by_leaf[$leaf_id] /= $number_of_boxes;
+    $std_div_by_leaf[$leaf_id] /= $box_number;
 }
 
 
-echo 'AVG PER BOX PER LEAF: ',array_sum($all_boxes)/($number_of_boxes+$additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
+echo 'AVG PER BOX PER LEAF: ',array_sum($all_boxes)/($box_number+$additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
      ' <em>(this only counts boxes that have tricomes in them)</em><br/>';
 
 $box_std_dev = array();
@@ -459,6 +452,8 @@ window.onload = init;
                 $box_height = $image_y/$num_boxes_y;
                 for($i = 0 ; $i < ($num_boxes_y) ; $i++){
                     for($j = 0 ; $j < ($num_boxes_x) ; $j++){
+                        if(!isset($all_boxes[$box_number]))  $all_boxes[$box_number]=0;
+                        if(!isset($box_std_dev[$box_number])) $box_std_dev[$box_number]=0;
                         $avg_per_leaf = $all_boxes[$box_number]/$number_of_leafs;
                         $std_dev = $box_std_dev[$box_number];
                         $box_color = null;
@@ -574,7 +569,7 @@ window.onload = init;
                         $color = $LEAF_COLORS[$color_arg];
                         $sql_get_inner_cords_from_table_by_leaf->execute() or die($sql_get_inner_cords_from_table_by_leaf->queryString.'lala<br/><br/>'.var_dump($sql_get_inner_cords_from_table_by_leaf->errorInfo()));
                         while($row = $sql_get_inner_cords_from_table_by_leaf->fetch(PDO::FETCH_ASSOC)){
-                            echo "addPoint(",$row['xCord'],",",$row[yCord],",'$color');";
+                            echo "addPoint(",$row['xCord'],",",$row['yCord'],",'$color');";
                         }
                     }
                 }
@@ -622,7 +617,8 @@ window.onload = init;
                             $std_avg = array_sum($all_values_temp)/count($leaf_ids);
                             $std_avg_cord = ( ( $std_avg ) / $max_height) * $image_y;
                             
-                            if($max_inBox == '' || !isset($max_inBox)) $max_inBox = 0;
+                            if(!isset($max_inBox)) $max_inBox = 0;
+                            elseif($max_inBox == '') $max_inBox = 0;
                             echo "addBar(",$height,",$width,$size,'black',",$std_avg_cord,",$std_avg);";
                             
                         }
@@ -866,7 +862,7 @@ window.onload = init;
 "<input type='hidden' name='tricomes' value='$_POST[tricomes]' />",
 "<input type='hidden' name='nn_bar_range' value='$_POST[nn_bar_range]' />",
 "<input type='hidden' name='nn_graph_bin_size' value='$_POST[nn_graph_bin_size]' />",
-"Add <input type='number' name='additional_boxes' min='0' max='",$_POST[num_boxes_x]*$_POST[num_boxes_y],"' step='1' value='0'> Empty Boxes <br/>",
+"Add <input type='number' name='additional_boxes' min='0' max='",$_POST['num_boxes_x']*$_POST['num_boxes_y'],"' step='1' value='0'> Empty Boxes <br/>",
             "<button type='submit'>ReAnalayze</button></form>";
     
         function my_comp($cord1,$cord2){
