@@ -7,7 +7,6 @@ if(isset($ini_settings['Fiji'])){
     die("YOU MUST SET YOUR DATABASE SETTINGS IN: ./settings.ini");
 }
     
-    
 
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 

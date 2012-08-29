@@ -19,7 +19,7 @@ echo '<header><b>',$genotype_name,'</b></header>';
 $stmt_get_leafs_by_genotype = $pdo_dbh->prepare('SELECT leaf_id,leaf_name,file_name FROM leafs WHERE fk_genotype_id = :genotype');
 $stmt_get_leafs_by_genotype->bindValue(':genotype', $genotype,PDO::PARAM_INT);
 
-$stmt_get_num_tricomes = $pdo_dbh->prepare('Select COUNT(xCord) as cnt FROM cords WHERE fk_leaf_id = :leaf_id');
+$stmt_get_num_tricomes = $pdo_dbh->prepare('Select COUNT(xCord) as cnt FROM cords WHERE fk_leaf_id = :leaf_id AND cord_type = :type');
 $stmt_get_num_tricomes->bindParam(':leaf_id', $leaf_id, PDO::PARAM_INT);
 
 $stmt_get_leafs_by_genotype->execute();
@@ -37,15 +37,32 @@ echo '<table border="1">',
 if(count($result) > 0){
     foreach($result as $row){
         $leaf_id = $row['leaf_id'];
+        
+        $stmt_get_num_tricomes->bindValue(':type', 'inner', PDO::PARAM_STR);
         $stmt_get_num_tricomes->execute();
         $row2 = $stmt_get_num_tricomes->fetch(PDO::FETCH_ASSOC);
+        $inner = $row2['cnt'];
+        $stmt_get_num_tricomes->closeCursor();
+        
+        $stmt_get_num_tricomes->bindValue(':type', 'outter', PDO::PARAM_STR);
+        $stmt_get_num_tricomes->execute();
+        $row2 = $stmt_get_num_tricomes->fetch(PDO::FETCH_ASSOC);
+        $outer = $row2['cnt'];
+        $stmt_get_num_tricomes->closeCursor();
+        
+        $stmt_get_num_tricomes->bindValue(':type', 'auto', PDO::PARAM_STR);
+        $stmt_get_num_tricomes->execute();
+        $row2 = $stmt_get_num_tricomes->fetch(PDO::FETCH_ASSOC);
+        $auto = $row2['cnt'];
+        $stmt_get_num_tricomes->closeCursor();
+        
         echo '<tr>',
                 '<td>',$row['leaf_id'],'</td>',
                 '<td>',$row['leaf_name'],'</td>',
                 '<td><img src="./pics/',$row['file_name'],'_thumb.jpg"/></td>',
 				'<td> Marginal: ',$outer,'<br/>Laminal: ',$inner,'<br/>Auto: ',$auto,'<br/><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Edit</a></td>',
              '</tr>';
-        $stmt_get_num_tricomes->closeCursor();
+        
     }
 }
 echo '<tr>',
