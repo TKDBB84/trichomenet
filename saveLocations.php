@@ -1,5 +1,5 @@
 <?php
-include_once 'connection2.php';
+include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 $raw_Xdata = substr($_POST['Xdata'],0,-1);

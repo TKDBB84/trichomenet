@@ -1,6 +1,6 @@
 <?php
 include_once 'header.php';
-include_once 'connection2.php';
+include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 if(isset($_POST)){

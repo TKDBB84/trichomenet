@@ -1,6 +1,6 @@
 <?php
 if(!isset($_SESSION)) session_start();
-include_once 'connection2.php';
+include_once 'connection.php';
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $_SESSION['show_bar_graph'] = $_POST['show_bar_graph'];

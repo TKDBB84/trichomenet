@@ -1,5 +1,5 @@
 <?php
-include_once 'connection2.php';
+include_once 'connection.php';
 $ini_settings = parse_ini_file('./settings.ini',true);
 if(isset($ini_settings['Fiji'])){
     $output_Path = $ini_settings['Fiji']['CSV_Output_Dir'];

@@ -1,6 +1,6 @@
 <?php
 if(!isset($_SESSION)) session_start();
-include_once 'connection2.php';
+include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 /*
 $_SESSION['show_bar_graph']

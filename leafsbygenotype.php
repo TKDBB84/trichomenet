@@ -1,6 +1,6 @@
 <?php
 if(!isset($_GET['genotype_id'])) die('No Genotype ID Provided');
-include_once 'connection2.php';
+include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 $genotype = $_GET['genotype_id'];
