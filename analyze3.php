@@ -1,12 +1,17 @@
 <?php
+if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
 include_once 'header.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
+$user_id = $_SESSION['user_id'];
+
 $genotypes = array();
+$stmt_get_genotypes = $pdo_dbh->prepare('SELECT genotype_id,genotype FROM genotypes WHERE `owner_id` = :user_id');
+$stmt_get_genotypes->bindValue(':user_id',$user_id,PDO::PARAM_INT);
+$stmt_get_genotypes->execute();
+$result = $stmt_get_genotypes->fetchAll(PDO::FETCH_ASSOC);
 
-
-$result = $pdo_dbh->query("SELECT genotype_id,genotype FROM genotypes")->fetchAll(PDO::FETCH_ASSOC);
 if(count($result) > 0){
     foreach($result as $row){
         $genotypes[$row['genotype_id']] = $row['genotype'];

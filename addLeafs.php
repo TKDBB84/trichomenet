@@ -25,10 +25,11 @@ if(isset($_POST)){
                 else
                     $leaf_name = $_POST['new_leaf_name'];
                 
-                $stmt_add_leaf = $pdo_dbh->prepare("INSERT INTO leafs (`fk_genotype_id`,`leaf_name`,`file_name`) VALUES (:genotype_id,:leaf_name,:filename);");
+                $stmt_add_leaf = $pdo_dbh->prepare("INSERT INTO leafs (`fk_genotype_id`,`leaf_name`,`file_name`,`owner_id`) VALUES (:genotype_id,:leaf_name,:filename,:user_id);");
                 $stmt_add_leaf->execute(array(':genotype_id'=>$genotype_id,
                                               ':leaf_name' => $leaf_name,
-                                              ':filename' => $filename));
+                                              ':filename' => $filename,
+                                              ':user_id' => $_SESSION['user_id']));
             } else {
                 echo "Error Uploading File<br/>";
                 echo 'Here is some more debugging info:<br/>';
@@ -46,7 +47,11 @@ if(isset($_POST)){
 
 $genotypes = array();
 
-$result = $pdo_dbh->query('SELECT genotype_id,genotype FROM genotypes')->fetchAll(PDO::FETCH_ASSOC);
+$stmt_get_genotypes = $pdo_dbh->prepare('SELECT genotype_id,genotype FROM genotypes WHERE `owner_id` = :user_id');
+$stmt_get_genotypes->bindValue(':user_id',$_SESSION['user_id'],PDO::PARAM_INT);
+$stmt_get_genotypes->execute();
+$result = $stmt_get_genotypes->fetchAll(PDO::FETCH_ASSOC);
+
 if(count($result) > 0){
     foreach($result as $row){
         $genotypes[$row['genotype_id']] = $row['genotype'];

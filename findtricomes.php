@@ -1,3 +1,4 @@
+<?php if(!isset($_SESSION)) session_start(); ?>
 <link rel="stylesheet" href="css/styles.css" type="text/css">
 <?php
 include_once 'header.php';
@@ -223,7 +224,7 @@ $stmt_get_leaf_cords->closeCursor();
         }
     }
 
-    function addRow(tableID,x,y,type) {
+    /*function addRow(tableID,x,y,type) {
         var table = document.getElementById(tableID);
         var rowCount = table.rows.length;
         var row = table.insertRow(rowCount);
@@ -233,7 +234,7 @@ $stmt_get_leaf_cords->closeCursor();
         cell2.innerHTML = y.toString();
         var cell3 = row.insertCell(2);
         cell3.innerHTML = type.toString();
-    }
+    }*/
     
     function clearmything(clrsession){
         var confm = true;
@@ -249,8 +250,8 @@ $stmt_get_leaf_cords->closeCursor();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, c.width, c.height);
             ctx.restore();
-            var table = document.getElementById('datatable');
-            table.innerHTML = "<tr><td>X cord</td><td>Y cord</td><td>Type</td></tr>";
+            //var table = document.getElementById('datatable');
+            //table.innerHTML = "<tr><td>X cord</td><td>Y cord</td><td>Type</td></tr>";
             document.getElementById('tip').disabled = false;
         }
     }
@@ -348,7 +349,7 @@ $stmt_get_leaf_cords->closeCursor();
         ctx.arc(x,y,5,0,Math.PI*2,true);
         ctx.closePath();
         ctx.stroke();
-        addRow('datatable',x,y,type);
+        //addRow('datatable',x,y,type);
         var i = (sessionStorage.length - 1 )/ 3;
         var key = "X"+i;
         sessionStorage.setItem(key, x);
@@ -367,7 +368,7 @@ $stmt_get_leaf_cords->closeCursor();
 </head>
 
 <canvas id="myCanvas" width="<?php echo $width; ?>" height="<?php echo $height; ?>" onmousedown="draw();"></canvas>
-<img>
+<!--<img>--><br/>
 Set Sensitivity:<br/>
 <input id="rng" type="range" min="0" max="255" value="100" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
 <input  id="txt" type="text" value="100" size="3" readonly/>
@@ -382,6 +383,7 @@ Set Sensitivity:<br/>
 
 </body>
 <div id="csv"></div>
+<!--
 <table id='datatable' style="">
     <tr>
         <td>X cord</td>
@@ -389,6 +391,6 @@ Set Sensitivity:<br/>
         <td>Type</td>
     </tr>
 </table>
-
+-->
 </body>
-<div class="modal"><!-- Place at bottom of page --></div>
+<!--<div class="modal"><!-- Place at bottom of page </div>-->

@@ -2,27 +2,17 @@
 if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
-/*
-$_SESSION['show_bar_graph']
-$_SESSION['bar_range']
-$_SESSION['num_boxes_x']
-$_SESSION['num_boxes_y']
-$_SESSION['edge']
-$_SESSION['count_outer']
-$_SESSION['show_values']
-$_SESSION['graph_bin_size']
-$_SESSION['outline']
-$_SESSION['tricomes']
-$_SESSION['nn_bar_range']
-$_SESSION['nn_graph_bin_size']
- */
+
+$user_id = $_SESSION['user_id'];
+
 if(!isset($_GET['genotype_id'])) die("No Genotype Selected");
 $genotype_id = $_GET['genotype_id'];
 $stmt_get_cord_count_by_leafid = $pdo_dbh->prepare('SELECT count(xCord) as cnt FROM cords WHERE fk_leaf_id = :leaf_id');
 
 
-$stmt_get_leafs_by_genotype = $pdo_dbh->prepare("SELECT `leaf_id`,`leaf_name`,`file_name` FROM leafs WHERE fk_genotype_id = :genotype_id ORDER BY leaf_name");
+$stmt_get_leafs_by_genotype = $pdo_dbh->prepare("SELECT `leaf_id`,`leaf_name`,`file_name` FROM leafs WHERE fk_genotype_id = :genotype_id AND owner_id = :user_id ORDER BY leaf_name");
 $stmt_get_leafs_by_genotype->bindValue(':genotype_id', $genotype_id, PDO::PARAM_INT);
+$stmt_get_leafs_by_genotype->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt_get_leafs_by_genotype->execute();
 
 
@@ -47,7 +37,7 @@ $stmt_get_leafs_by_genotype->closeCursor();
 
 <form action="alignpoints3.php" method="post" onSubmit="return loop_select();">
     <input type="hidden" name="genotype_id" value="<?php echo $genotype_id; ?>"/>
-<table>
+<table rules="groups">
     <tr>
         <td><strong>Select Leafs To Include:</strong></td>
         <td></td>
@@ -57,7 +47,7 @@ $stmt_get_leafs_by_genotype->closeCursor();
         <td>
         </td>
     </tr>
-    <tr>
+    <tr> 
         <td>
             <select name="full_list" id="fl" onChange="getLeafDetails(this);" size="5" multiple="multiple">
             <?php 

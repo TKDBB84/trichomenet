@@ -1,6 +1,8 @@
 <?php
+if(!isset($_SESSION)) session_start();
 if(!isset($_GET['genotype_id'])) die('No Genotype ID Provided');
 include_once 'connection.php';
+$user_id = $_SESSION['user_id'];
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 $genotype = $_GET['genotype_id'];
@@ -16,8 +18,9 @@ else
 
 echo '<header><b>',$genotype_name,'</b></header>';
 
-$stmt_get_leafs_by_genotype = $pdo_dbh->prepare('SELECT leaf_id,leaf_name,file_name FROM leafs WHERE fk_genotype_id = :genotype');
+$stmt_get_leafs_by_genotype = $pdo_dbh->prepare('SELECT leaf_id,leaf_name,file_name FROM leafs WHERE fk_genotype_id = :genotype AND owner_id = :user_id');
 $stmt_get_leafs_by_genotype->bindValue(':genotype', $genotype,PDO::PARAM_INT);
+$stmt_get_leafs_by_genotype->bindValue(':user_id', $user_id,PDO::PARAM_INT);
 
 $stmt_get_num_tricomes = $pdo_dbh->prepare('Select COUNT(xCord) as cnt FROM cords WHERE fk_leaf_id = :leaf_id AND cord_type = :type');
 $stmt_get_num_tricomes->bindParam(':leaf_id', $leaf_id, PDO::PARAM_INT);
@@ -28,10 +31,10 @@ echo '<input type="hidden" name="MAX_FILE_SIZE" value="5242880" />';
 echo '<input type="hidden" name="genotype_id" value="',$genotype,'"/>';
 echo '<table border="1">',
         '<tr>',
-            '<td>Leaf ID</td>',
-            '<td>Leaf Name</td>',
-            '<td>Image</td>',
-            '<td># of Marked Tricombs</td>',
+            '<th>Leaf Name</td>',
+            '<th>Image</td>',
+            '<th>Number of<br/>Marked Tricombs</th>',
+            //'<th/>',
         '</tr>';
 
 if(count($result) > 0){
@@ -57,16 +60,15 @@ if(count($result) > 0){
         $stmt_get_num_tricomes->closeCursor();
         
         echo '<tr>',
-                '<td>',$row['leaf_id'],'</td>',
                 '<td>',$row['leaf_name'],'</td>',
-                '<td><img src="./pics/',$row['file_name'],'_thumb.jpg"/></td>',
-				'<td> Marginal: ',$outer,'<br/>Laminal: ',$inner,'<br/>Auto: ',$auto,'<br/><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Edit</a></td>',
+                '<td align="center"><img src="./pics/',$row['file_name'],'_thumb.jpg"/></td>',
+                '<td> Marginal: ',$outer,'<br/>Laminal: ',$inner,'<br/>Auto: ',$auto,'<br/></td>',
+                '<td><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Edit</a></td>',
              '</tr>';
         
     }
 }
 echo '<tr>',
-            '<td/>',
             '<td><input type="text" name="new_leaf_name"/></td>',
             '<td><input type="file" name="new_leaf_file" /></td>',
             '<td><button type="submit" name="add_new_leaf">Add New</button></td>',

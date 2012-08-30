@@ -1,13 +1,16 @@
 <?php
+if(!isset($_SESSION)) session_start();
 include_once 'header.php';
 include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
+$user_id = $_SESSION['user_id'];
 if(isset($_POST)){
     if(isset($_POST['new_geno'])){
         $genotype_name = $_POST['new_genotype'];
-        $stmt_new_genotype = $pdo_dbh->prepare("INSERT INTO `genotypes` (`genotype`) VALUES (:genotype_name)");
-        $stmt_new_genotype->bindValue(':genotype_name', $genotype_name);
+        $stmt_new_genotype = $pdo_dbh->prepare("INSERT INTO `genotypes` (`genotype`,`owner_id`) VALUES (:genotype_name,:user_id)");
+        $stmt_new_genotype->bindValue(':genotype_name', $genotype_name, PDO::PARAM_STR);
+        $stmt_new_genotype->bindValue(':user_id',$user_id,PDO::PARAM_INT);
         $stmt_new_genotype->execute();
     }
 }
@@ -17,7 +20,10 @@ if(isset($_POST)){
 <?php
 
 $genotypes = array();
-$results = $pdo_dbh->query("SELECT genotype_id,genotype FROM genotypes")->fetchAll(PDO::FETCH_ASSOC);
+$stmt_get_genotypes = $pdo_dbh->prepare('SELECT genotype_id,genotype FROM genotypes WHERE `owner_id` = :user_id');
+$stmt_get_genotypes->bindValue(':user_id',$user_id,PDO::PARAM_INT);
+$stmt_get_genotypes->execute();
+$results = $stmt_get_genotypes->fetchAll(PDO::FETCH_ASSOC);
 
 if(count($results) > 0){
     foreach($results as $row){
@@ -36,67 +42,24 @@ if(isset($_POST['genotype_id'])){
 }
 
 ?>
-<script type="text/javascript">
-    function getShapes(id){
-        if(typeof id === 'undefined'){
-            var genoselect = document.getElementById('geno_select');
-            var genotype_id = genoselect.options[genoselect.options.selectedIndex].value;
-        }else{
-            var genotype_id = id;
-        }
-        if(genotype_id == -1 || genotype_id == '-1') return;
-        var xmlhttp;
-        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function(){
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                document.getElementById('shapes').innerHTML=xmlhttp.responseText;
-            }
-        }
-        var sendstr = "?genotype_id="+genotype_id;
-        xmlhttp.open("GET","shapebygenotype.php"+sendstr,true);
-        xmlhttp.send();
-    }
-</script>
-<body onload="">
-    
-Select A Genotype: 
-<select id="geno_select" onChange="getShapes()">
-<?php foreach($genotypes as $id => $genotype)
-        echo '<option value="',$id,'"',($id==$first_key)?'selected':'','>',$genotype,'</option>';
-?>
-</select>
-<br/><br/><br/>
-<!--<header><b>Shapes For: </b></header>
-<form action="./admin.php" enctype="multipart/form-data" method="POST">
-<div id="shapes" style="padding-left: 20px;"></div>
-</form>
-<br/><br/>-->
+<body>
 <header><b>Genotypes</b></header>
 <form action="./admin.php" method="POST">
     <div id="genotypes" style="padding-left: 20px;">
     <table border="1">
         <tr>
-            <td>Genotype ID</td>
-            <td>Genotype</td>
-            <td/>
+            <th colspan="2">Genotype</th>
         </tr>
     <?php if(isset($genotypes[0]) && $genotypes[0] === "No Genotypes"){
                 //no genotypes
             }else{
-                foreach($genotypes as $id => $genotype)
+                foreach($genotypes as $genotype)
                     echo '<tr>',
-                            '<td>',$id,'</td>',
-                            '<td>',$genotype,'</td>',
-                            '<td/>',
+                            '<td colspan="2">',$genotype,'</td>',
                         '</tr>';
             }
     ?>
         <tr>
-            <td/>
             <td><input type="text" name="new_genotype"/></td>
             <td><button type="Submit" name="new_geno">Add</button></td>
         </tr>
