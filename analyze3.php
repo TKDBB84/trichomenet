@@ -5,6 +5,11 @@ include_once 'header.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 $user_id = $_SESSION['user_id'];
+if(isset($curr_genotype)) unset($curr_genotype);
+if(isset($_SESSION['current_genotype'])){
+    $curr_genotype = $_SESSION['current_genotype'];
+    unset($_SESSION['current_genotype']);
+}
 
 $genotypes = array();
 $stmt_get_genotypes = $pdo_dbh->prepare('SELECT genotype_id,genotype FROM genotypes WHERE `owner_id` = :user_id');
@@ -37,6 +42,13 @@ reset($genotypes);
         xmlhttp.onreadystatechange=function(){
             if (xmlhttp.readyState==4 && xmlhttp.status==200){
                 document.getElementById('main').innerHTML=xmlhttp.responseText;
+                <?php
+                    if(isset($_SESSION['all_ids'])){
+                        foreach($_SESSION['all_ids'] as $leaf_id)
+                            echo 'moveLeaf("',$leaf_id,'");';
+                        unset($_SESSION['all_ids']);
+                    }
+                ?>
             }
         }
         var sendstr = "?genotype_id="+genotype_id;
@@ -44,52 +56,6 @@ reset($genotypes);
         xmlhttp.send();
     }
     
-    function updateShapeImg(leaf_id,div_id){
-        if(leaf_id == -1 || leaf_id == '-1') return;
-        var xmlhttp;
-        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function(){
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                document.getElementById(div_id).innerHTML=xmlhttp.responseText;
-            }
-        }
-        var sendstr = "?leaf_id="+leaf_id;
-        xmlhttp.open("GET","getLeafThumbImage.php"+sendstr,true);
-        xmlhttp.send();
-    }
-    
-    //getCordsByLeaf
-    function addCordsByLeaf(leaf_id,height,width){
-        if(leaf_id == -1 || leaf_id == '-1') return;
-        resize(height,width);
-        var xmlhttp;
-        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function(){
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                var result = xmlhttp.responseText;
-                if(result == '0' || result == 0){
-                    alert("ERROR PROCESSING DATA");
-                    return;
-                }
-                var split = result.split('~');
-                var xCords = split[0].split(',');
-                var yCords = split[1].split(',');
-                var Types  = split[2].split(',');
-                addAllPoints(xCords,yCords,Types);
-            }
-        }
-        var sendstr = "?leaf_id="+leaf_id;
-        xmlhttp.open("GET","getCordsByLeaf.php"+sendstr,true);
-        xmlhttp.send();
-    }
     
     function getLeafDetails(list){
         var selected = new Array();
@@ -124,7 +90,7 @@ reset($genotypes);
           var newOptions = new Array();
           //var elOptNew = document.createElement('option');
           for (i = remove_from.length - 1; i>=0; i--) {
-            if (remove_from.options[i].selected) {
+            if (remove_from.options[i].selected || remove_from.options[i].value == leaf_id) {
                 newOptions.push(document.createElement('option'));
                 var arr_index = newOptions.length - 1;
                 newOptions[arr_index].text = remove_from.options[i].text;
@@ -208,10 +174,14 @@ reset($genotypes);
 
 
 View Genotype:
-<body onload="getGenotype(<?php echo $first_key; ?>);">
+<body onload="getGenotype(<?php echo isset($curr_genotype)?$curr_genotype:$first_key; ?>);">
 <select id="geno_select" onChange="getGenotype(this.value)">
-<?php foreach($genotypes as $id => $genotype)
-        echo '<option value="',$id,'">',$genotype,'</option>';
+<?php foreach($genotypes as $id => $genotype){
+        echo '<option value="',$id,'"';
+        if(isset($curr_genotype))
+            if($curr_genotype == $id) echo ' selected';
+        echo '>',$genotype,'</option>';
+}
 ?>
 </select>
     <div id="main">

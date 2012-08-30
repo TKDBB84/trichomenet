@@ -1,8 +1,11 @@
 <?php
 if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
+include_once 'stndev.php';
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//~~~~~~~~~~~~~~~~~~~~~~STORE SETTINGS TO SESSION~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $_SESSION['show_bar_graph'] = $_POST['show_bar_graph'];
 $_SESSION['bar_range'] = $_POST['bar_range'];
 $_SESSION['num_boxes_x'] = $_POST['num_boxes_x'];
@@ -15,14 +18,16 @@ $_SESSION['outline'] = $_POST['outline'];
 $_SESSION['tricomes'] = $_POST['tricomes'];
 $_SESSION['nn_bar_range'] = $_POST['nn_bar_range'];
 $_SESSION['nn_graph_bin_size'] = $_POST['nn_graph_bin_size'];
-
+$_SESSION['current_genotype'] = $_POST['genotype_id'];
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~~GET HEATMAP SETTINGS FROM INI~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     $ini_settings = parse_ini_file('./settings.ini',true);
-    
-    $image_x = $ini_settings['Images']['Width'];
-    $image_y = $ini_settings['Images']['Height'];
     
     $LEAF_COLORS = $ini_settings['HeatMap']['Leaf_Outline_Colors'];
     $LEAF_COLOR_NAMES = $ini_settings['HeatMap']['Color_Name'];
@@ -31,8 +36,33 @@ $_SESSION['nn_graph_bin_size'] = $_POST['nn_graph_bin_size'];
     $temp_array = $ini_settings['HeatMap']['HeatMap_MaxValue'];
     array_unshift($temp_array, 0);
     $HEAT_MAP_RANGES = $temp_array;
+    if(count($HEAT_MAP_COLORS) !== count($HEAT_MAP_RANGES) ) die("HEATMAP COLOR SETUP MISS-MATCH!");
+    if(count($LEAF_COLORS) !== count($LEAF_COLOR_NAMES) ) die("LEAF COLOR SETUP MISS-MATCH!");
+    $NUM_COLORS = count($HEAT_MAP_COLORS);
+    $NUM_LEAF_COLORS = count($LEAF_COLORS);
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    
+    
+    
+    
+//~~~~~~~~~~~~~~~~~~~~~~~~~GET LIST OF LEAFS SELECTED~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$leaf_ids = array();
+$table_name = uniqid("tbl_",false);
+foreach($_POST['all_leaf_ids'] as $value){
+        $leaf_ids[] = (int)$value;
+}
+$all_ids = implode(",", $leaf_ids);
+$_SESSION['all_ids'] = $leaf_ids;
+$number_of_leafs = count($leaf_ids);
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+
+
+
+    
+//~~~~~~~~~~~~~~~~~~~~~~~~SET THE SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if(isset($_POST['additional_boxes'])){
     $additional_boxes = $_POST['additional_boxes'];
 }else
@@ -114,6 +144,8 @@ if(isset($_POST['outline'])){
 }else
     $SHOW_BOX_OUTLINES = FALSE;
 
+
+
 if(isset($_POST['tricomes'])){
     if($_POST['tricomes'] == 0 || $_POST['tricomes'] == "0")
         $SHOW_TRICOMBS = FALSE;    
@@ -121,22 +153,6 @@ if(isset($_POST['tricomes'])){
         $SHOW_TRICOMBS = TRUE;
 }else
     $SHOW_TRICOMBS = TRUE;
-    
-if(count($HEAT_MAP_COLORS) !== count($HEAT_MAP_RANGES) ) die("HEATMAP COLOR SETUP MISS-MATCH!");
-if(count($LEAF_COLORS) !== count($LEAF_COLOR_NAMES) ) die("LEAF COLOR SETUP MISS-MATCH!");
-$NUM_COLORS = count($HEAT_MAP_COLORS);
-$number_of_boxes = $num_boxes_x * $num_boxes_y;
-$NUM_LEAF_COLORS = count($LEAF_COLORS);
-
-include_once 'stndev.php';
-//~~~~~~~~~~~~~~GET LIST OF LEAFS SELECTED~~~~~~~~~~~~~~~
-$leaf_ids = array();
-$table_name = uniqid("tbl_",false);
-foreach($_POST['all_leaf_ids'] as $value){
-        $leaf_ids[] = (int)$value;
-}
-$all_ids = implode(",", $leaf_ids);
-$number_of_leafs = count($leaf_ids);
 
 if(!isset($_POST['outline_leaf_ids']) && $SHOW_LEAF_EDGE){
     $outline_leaf_ids = $leaf_ids;
@@ -144,19 +160,47 @@ if(!isset($_POST['outline_leaf_ids']) && $SHOW_LEAF_EDGE){
     if($SHOW_LEAF_EDGE)
         $outline_leaf_ids = $_POST['outline_leaf_ids'];
 }
-//TEMPORARY
-$genotype_id = $_POST['genotype_id'];
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~Get Max Size Of Images~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    $sql_image = $pdo_dbh->prepare("SELECT file_name FROM `leafs` WHERE leaf_id = :leaf_id");
+    $sql_image->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
+    $tmp_height = -1;
+    $tmp_width = -1;
+    foreach($leaf_ids as $leaf_id){
+        $sql_image->execute();
+        $result = $sql_image->fetch(PDO::FETCH_ASSOC);
+        $file_name = $result['file_name'];
+        $sql_image->closeCursor();
+        $filepath = './pics/'.$file_name.'.jpg';
+        list($width, $height, $type, $attr) = getimagesize($filepath);
+        if($width > $tmp_width) $tmp_width = $width;
+        if($height > $tmp_height) $tmp_height = $height;
+        unset($width,$height);
+    }
+    $image_x = $tmp_width;
+    $image_y = $tmp_height;
+    unset($tmp_width,$tmp_height);
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    
+//~~~~~~~~~~~~~~~~~~~~~~~~~CREATE TEMP TABLE OF CORDS~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $sql_drop_temp_table = $pdo_dbh->prepare('DROP TEMPORARY TABLE IF EXISTS `:temp_table`');
 $sql_drop_temp_table->bindParam(':temp_table', $table_name, PDO::PARAM_STR);
 $sql_drop_temp_table->execute() or die($sql_drop_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_drop_temp_table->errorInfo()));
-
 $sql_copy_cords_to_temp = $pdo_dbh->prepare('CREATE TEMPORARY TABLE `:temp_table` LIKE `cords`');
 $sql_copy_cords_to_temp->bindParam(':temp_table', $table_name, PDO::PARAM_STR);
 $sql_copy_cords_to_temp->execute() or die($sql_copy_cords_to_temp->queryString.'lala<br/><br/>'.var_dump($sql_copy_cords_to_temp->errorInfo()));
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-//~~~~~~~~SHIFT ALL POINTS SO TIPS ARE ON 0,0~~~~~~~~~~~
+
+
+//~~~~~~~~~~~~~~SHIFT ALL POINTS SO TIPS ARE ON 0,0 (IN TEMP TABLE)~~~~~~~~~~~~~
 $sql_select_tip_from_leafid = $pdo_dbh->prepare('SELECT tip_x,tip_y FROM leafs WHERE leaf_id = :leaf_id');
 
 $sql_shift_points_in_temp_table_for_leaf_id = $pdo_dbh->prepare('INSERT INTO `:temp_tale` (xCord,yCord,fk_leaf_id,cord_type) SELECT
@@ -173,66 +217,65 @@ foreach($leaf_ids as $leaf_id){
     $row = $sql_select_tip_from_leafid->fetch(PDO::FETCH_ASSOC);
     $tip_x = $row['tip_x'];
     $tip_y = $row['tip_y'];
-    //die($tip_x."<br/><br/>".$tip_y);
+    
     if(is_null($tip_x) || is_null($tip_y)) die('one of the leafs has no defined tip!');
     $sql_select_tip_from_leafid->closeCursor();
     
     $sql_shift_points_in_temp_table_for_leaf_id->execute() or die($sql_shift_points_in_temp_table_for_leaf_id->queryString.'lala<br/><br/>'.var_dump($sql_shift_points_in_temp_table_for_leaf_id->errorInfo()));
 }
-unset($tip_x,$tip_y);//die('done');
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unset($tip_x,$tip_y);
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-//~~~~~~~~~~~~~~~~GET STATS ABOUT SHIFTED POINTS~~~~~~~~~~~~~~~~~~~
 
-
-$temp_string = 'SELECT xCord,yCord FROM `:table`';
-$temp_string .= (!$COUNT_OUTER)?" WHERE cord_type = 'inner'":'';
-$sql_get_all_cords_from_table = $pdo_dbh->prepare($temp_string);
-$sql_get_all_cords_from_table->bindParam(':table',$table_name,PDO::PARAM_STR);
-$num_of_cords = 0;
-$max_y = 0;
-$min_y = 0;
-$min_x = $image_x;
-
-$sql_get_all_cords_from_table->execute() or die($sql_get_all_cords_from_table->queryString.'lala<br/><br/>'.var_dump($sql_get_all_cords_from_table->errorInfo()));
-while($row = $sql_get_all_cords_from_table->fetch(PDO::FETCH_ASSOC)){
-    $num_of_cords++;
-    if($row['yCord'] < $min_y) $min_y = $row['yCord'];
-    if($row['yCord'] > $max_y) $max_y = $row['yCord'];
-}
-$sql_get_all_cords_from_table->closeCursor();
-
-$min_y = abs($min_y);
-$max_y = abs($max_y);
-$mid_y = ($min_y + $max_y)/2;
-$min_y = 480-$mid_y+$min_y;
-
+//~~~~~~~~~~~CREATE 2ND COPY OF CORDS TO JOIN 1ST COPY WITH~~~~~~~~~~~~~~~~~~~~~
 $super_temp_table = uniqid("tmp_tbl", false);
-
 $sql_copy_to_temp_table_from_table = $pdo_dbh->prepare('CREATE TEMPORARY TABLE `:to_table` (SELECT * FROM `:from_table`)');
 $sql_copy_to_temp_table_from_table->bindParam(':to_table', $super_temp_table, PDO::PARAM_STR);
 $sql_copy_to_temp_table_from_table->bindParam(':from_table', $table_name, PDO::PARAM_STR);
 $sql_copy_to_temp_table_from_table->execute() or die($sql_copy_to_temp_table_from_table->queryString.'lala<br/><br/>'.var_dump($sql_copy_to_temp_table_from_table->errorInfo()));
-//die('done2');
-$temp_string = 'SELECT c1.xCord AS x1,c1.yCord AS y1,c1.fk_leaf_id as leaf_id,
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+//~~~~~~~~~JOIN BOTH TEMP COPIES OF POINTS, TO CALCULATE DISTANCES~~~~~~~~~~~~~~
+$temp_dist_table = uniqid("tmp_dist_tbl", false);
+
+$temp_string = 'CREATE TEMPORARY TABLE `:dist_table` (SELECT c1.xCord AS x1,c1.yCord AS y1,c1.fk_leaf_id as leaf_id,
           sqrt(pow((c2.xCord - c1.xCord),2)+pow((c2.yCord - c1.yCord),2)) as distance
           FROM `:table1` as c1 JOIN `:table2` as c2 ON c1.fk_leaf_id = c2.fk_leaf_id
             WHERE (c1.xCord != c2.xCord OR c1.yCord != c2.yCord)';
-$temp_string .= (!$COUNT_OUTER)?" AND c1.cord_type = 'inner' AND c2.cord_type = 'inner'":'';
+$temp_string .= (!$COUNT_OUTER)?" AND (c1.cord_type = 'inner' OR c1.cord_type = 'auto') AND (c2.cord_type = 'inner' OR c2.cord_type = 'auto')":'';
+$temp_string .= ')';
+
 $sql_cross_join_both_temp_tables = $pdo_dbh->prepare($temp_string);
+$sql_cross_join_both_temp_tables->bindParam(':dist_table', $temp_dist_table, PDO::PARAM_STR);
 $sql_cross_join_both_temp_tables->bindParam(':table1', $table_name, PDO::PARAM_STR);
 $sql_cross_join_both_temp_tables->bindParam(':table2', $super_temp_table, PDO::PARAM_STR);
+$sql_cross_join_both_temp_tables->execute() or die($sql_cross_join_both_temp_tables->queryString.'lala<br/><br/>'.var_dump($sql_cross_join_both_temp_tables->errorInfo()));
+
+$sql_drop_temp_table->bindParam(':temp_table', $super_temp_table, PDO::PARAM_STR );
+$sql_drop_temp_table->execute() or die($sql_drop_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_drop_temp_table->errorInfo()));
+
+$sql_get_distances = $pdo_dbh->prepare("SELECT distance,leaf_id FROM `:dist_table`");
+$sql_get_distances->bindParam(':dist_table', $temp_dist_table, PDO::PARAM_STR);
+$sql_get_distances->execute()  or die($sql_get_distances->queryString.'lala<br/><br/>'.var_dump($sql_get_distances->errorInfo()));
 
 $num_dists = array();
 $all_dist = array();
 $bins_per_leaf = array();
 $Bins = array();
 
-$sql_cross_join_both_temp_tables->execute() or die($sql_cross_join_both_temp_tables->queryString.'lala<br/><br/>'.var_dump($sql_cross_join_both_temp_tables->errorInfo()));
 
-    //~~~~~~~~~~~~~~~~FIND AVERAGE DISTANCE AND BIN SIZES~~~~~~~~~~~~~~~~~~~~~~~
-    while($row = $sql_cross_join_both_temp_tables->fetch(PDO::FETCH_ASSOC)){
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+//~~~~~~~~~~~~~~~~~~FIND AVERAGE DISTANCE AND BIN SIZES~~~~~~~~~~~~~~~~~~~~~~~~~
+    while($row = $sql_get_distances->fetch(PDO::FETCH_ASSOC)){
         if( !isset($bins_per_leaf[$row['leaf_id']]) ) $bins_per_leaf[$row['leaf_id']] = array();
         $distance = $row['distance'];
         $NUM_OF_BINS = count($BIN_SIZES);
@@ -262,7 +305,6 @@ $sql_cross_join_both_temp_tables->execute() or die($sql_cross_join_both_temp_tab
         if(!isset($num_dists[$row['leaf_id']])) $num_dists[$row['leaf_id']] = 0;
         $num_dists[$row['leaf_id']]++;
     }
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $sql_cross_join_both_temp_tables->closeCursor();
 $all_leaf_avg = 0;
 foreach($leaf_ids as $leaf_id){
@@ -270,22 +312,16 @@ foreach($leaf_ids as $leaf_id){
     
 }
 
-echo 'Average Distance On Single Leaf: ',$all_leaf_avg/$number_of_leafs,"<br/>";
-$temp_dist_table = uniqid("tmp_dist_tbl", false);
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-$sql_create_temp_table_of_distances = $pdo_dbh->prepare('CREATE TEMPORARY TABLE `:dist_table` ('.$temp_string.')');
-$sql_create_temp_table_of_distances->bindParam(':table1', $table_name, PDO::PARAM_STR);
-$sql_create_temp_table_of_distances->bindParam(':table2', $super_temp_table, PDO::PARAM_STR);
-$sql_create_temp_table_of_distances->bindParam(':dist_table', $temp_dist_table, PDO::PARAM_STR);
 
-$sql_create_temp_table_of_distances->execute() or die('<br/><br/>'.$sql_create_temp_table_of_distances->queryString.'<br/><br/>'.var_dump($sql_create_temp_table_of_distances->errorInfo()).'<br/><br/>');
-//die($sql_create_temp_table_of_distances->queryString);
-$sql_drop_temp_table->bindParam(':temp_table', $super_temp_table, PDO::PARAM_STR );
-$sql_drop_temp_table->execute() or die($sql_drop_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_drop_temp_table->errorInfo()));
 
+
+
+//~~~~~~~~~~~~~~~~~~GET NEXT NEIGHBOR DISTANCES AND BIN THEM~~~~~~~~~~~~~~~~~~~~
 $next_neighbor_distances_bins = array();
-
 $sql_get_nnd_from_dist_table_by_leaf_id = $pdo_dbh->prepare('SELECT min(distance) as dist FROM `:dist_table` WHERE leaf_id = :leaf_id group by x1,y1');
 $sql_get_nnd_from_dist_table_by_leaf_id->bindParam(':dist_table',$temp_dist_table,PDO::PARAM_STR);
 $sql_get_nnd_from_dist_table_by_leaf_id->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
@@ -324,21 +360,58 @@ foreach($leaf_ids as $leaf_id){
 }
 $sql_drop_temp_table->bindParam(':temp_table', $temp_dist_table, PDO::PARAM_STR);
 $sql_drop_temp_table->execute() or die($sql_drop_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_drop_temp_table->errorInfo()));
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-//~~~~~~~~~~~~~~~~~SHIFT CORDS BACK INTO FRAME~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~FIND CENTER OF LEAF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$temp_string = 'SELECT xCord,yCord FROM `:table`';
+$temp_string .= (!$COUNT_OUTER)?" WHERE cord_type = 'inner' OR cord_type = 'auto'":'';
+$sql_get_all_cords_from_table = $pdo_dbh->prepare($temp_string);
+$sql_get_all_cords_from_table->bindParam(':table',$table_name,PDO::PARAM_STR);
+$num_of_cords = 0;
+$min_x = $image_x;
+$min_y = 99999;
+$max_y = -1;
+
+$sql_get_all_cords_from_table->execute() or die($sql_get_all_cords_from_table->queryString.'lala<br/><br/>'.var_dump($sql_get_all_cords_from_table->errorInfo()));
+while($row = $sql_get_all_cords_from_table->fetch(PDO::FETCH_ASSOC)){
+    $num_of_cords++;
+    if($row['yCord'] < $min_y) $min_y = $row['yCord'];
+    if($row['yCord'] > $max_y) $max_y = $row['yCord'];
+}
+$sql_get_all_cords_from_table->closeCursor();
+
+$min_y = abs($min_y);
+$max_y = abs($max_y);
+$mid_y = ($min_y + $max_y)/2;
+$min_y += 480-$mid_y;
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~SHIFT CORDS BACK INTO FRAME~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $sql_shift_points_back_in_temp_table = $pdo_dbh->prepare('UPDATE `:table_name` SET xCord = (xCord + :min_x), yCord = (yCord + :min_y)');
 $sql_shift_points_back_in_temp_table->bindParam(':table_name', $table_name, PDO::PARAM_STR);
 $sql_shift_points_back_in_temp_table->bindParam(':min_x', $min_x, PDO::PARAM_INT);
 $sql_shift_points_back_in_temp_table->bindParam(':min_y', $min_y, PDO::PARAM_INT);
 $sql_shift_points_back_in_temp_table->execute() or die($sql_shift_points_back_in_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_shift_points_back_in_temp_table->errorInfo()));
-//die('points shifted into frame');
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-//~~~~~~~~~~~~~~~~CREATE EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+~~//~~~~~~~~~~~~~~~~~~~~~~~~~CREATE EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $x_divs = array();
 $y_divs = array();
 for($i = 0 ; $i < $num_boxes_x ; $i++){
@@ -347,14 +420,18 @@ for($i = 0 ; $i < $num_boxes_x ; $i++){
 for($i = 0 ; $i < $num_boxes_y ; $i++){
     $y_divs[$i] = ($image_y/$num_boxes_y) * ($i+1);
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-//~~~~~~~~~~~~~~DIVIDE POINTS FROM EACH LEAF INTO BOXES~~~~~~~~~~~~~~
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~DIVIDE POINTS FROM EACH LEAF INTO BOXES~~~~~~~~~~~~~~~~~~~~
 $boxes_by_leaf = array();
 
 $temp_string = 'SELECT xCord,yCord FROM `:table_name` WHERE fk_leaf_id = :leaf_id';
-$temp_string .= (!$COUNT_OUTER)?" AND cord_type = 'inner'":'';
+$temp_string .= (!$COUNT_OUTER)?" AND cord_type = 'inner' OR cord_type = 'auto'":'';
 
 $sql_get_cords_from_table_by_leaf = $pdo_dbh->prepare($temp_string);
 $sql_get_cords_from_table_by_leaf->bindParam(':table_name',$table_name,PDO::PARAM_STR);
@@ -396,15 +473,22 @@ foreach($leaf_ids as $leaf_id){
         }
     }
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-//~~~~~~~~~~~~~~~FIND MIN/MAX/TOTAL FOR EACH BOX~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~FIND MIN/MAX/TOTAL FOR EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $all_boxes = array();
 $min_in_box = array();
 $max_in_box = array();
 $std_div_by_leaf = array();
+$total_num_boxes = $num_boxes_x * $num_boxes_y;
 foreach($leaf_ids as $leaf_id){
-    for($i = 0 ; $i < $number_of_boxes ; $i++){
+    for($i = 0 ; $i < $total_num_boxes ; $i++){
         if(isset($boxes_by_leaf[$leaf_id][$i])){
             if(!isset($max_in_box[$i])) $max_in_box[$i] = 0;
             if(!isset($min_in_box[$i])) $min_in_box[$i] = 999999;
@@ -418,10 +502,6 @@ foreach($leaf_ids as $leaf_id){
     }
     $std_div_by_leaf[$leaf_id] /= $box_number;
 }
-
-
-echo 'AVG PER BOX PER LEAF: ',array_sum($all_boxes)/($box_number+$additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
-     ' <em>(this only counts boxes that have tricomes in them)</em><br/>';
 
 $box_std_dev = array();
 
@@ -437,7 +517,10 @@ foreach($all_boxes as $box_num => $total_in_box){
     $box_std_dev[$box_num] = sqrt($sum);
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 ?>
 
@@ -840,37 +923,33 @@ window.onload = init;
         xmlhttp.send(parameters);
     }
 </script>
-
 <style type="text/css" media="screen">
     canvas, img { display:block;  border:1px solid black; }
     canvas { background:url('./pics/blank.jpg') }
-    </style>
-
-    <canvas id="myCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas>
-    <img>
-    
-        <?php
+</style>
+<?php
+echo 'Average Distance On Single Leaf: ',$all_leaf_avg/$number_of_leafs,"<br/>";
+echo 'AVG PER BOX PER LEAF: ',array_sum($all_boxes)/($box_number+$additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
+     ' <em>(this only counts boxes that have tricomes in them)</em><br/>';
+?>
+<canvas id="myCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas>
+<?php
     echo "<hr/><form method='post' action='",htmlentities($_SERVER['PHP_SELF']),"'>",$color_key,"<br/>","<input type='hidden' name='show_bar_graph' value='$_POST[show_bar_graph]' />",
-"<input type='hidden' name='bar_range' value='$_POST[bar_range]' />",
-"<input type='hidden' name='num_boxes_x' value='$_POST[num_boxes_x]' />",
-"<input type='hidden' name='num_boxes_y' value='$_POST[num_boxes_y]' />",
-"<input type='hidden' name='edge' value='$_POST[edge]' />",
-"<input type='hidden' name='count_outer' value='$_POST[count_outer]' />",
-"<input type='hidden' name='show_values' value='$_POST[show_values]' />",
-"<input type='hidden' name='graph_bin_size' value='$_POST[graph_bin_size]' />",
-"<input type='hidden' name='outline' value='$_POST[outline]' />",
-"<input type='hidden' name='tricomes' value='$_POST[tricomes]' />",
-"<input type='hidden' name='nn_bar_range' value='$_POST[nn_bar_range]' />",
-"<input type='hidden' name='nn_graph_bin_size' value='$_POST[nn_graph_bin_size]' />",
-"Add <input type='number' name='additional_boxes' min='0' max='",$_POST['num_boxes_x']*$_POST['num_boxes_y'],"' step='1' value='0'> Empty Boxes <br/>",
+            "<input type='hidden' name='bar_range' value='$_POST[bar_range]' />",
+            "<input type='hidden' name='num_boxes_x' value='$_POST[num_boxes_x]' />",
+            "<input type='hidden' name='num_boxes_y' value='$_POST[num_boxes_y]' />",
+            "<input type='hidden' name='edge' value='$_POST[edge]' />",
+            "<input type='hidden' name='count_outer' value='$_POST[count_outer]' />",
+            "<input type='hidden' name='show_values' value='$_POST[show_values]' />",
+            "<input type='hidden' name='graph_bin_size' value='$_POST[graph_bin_size]' />",
+            "<input type='hidden' name='outline' value='$_POST[outline]' />",
+            "<input type='hidden' name='tricomes' value='$_POST[tricomes]' />",
+            "<input type='hidden' name='nn_bar_range' value='$_POST[nn_bar_range]' />",
+            "<input type='hidden' name='nn_graph_bin_size' value='$_POST[nn_graph_bin_size]' />",
+            "Add <input type='number' name='additional_boxes' min='0' max='",$_POST['num_boxes_x']*$_POST['num_boxes_y'],"' step='1' value='0'> Empty Boxes <br/>",
             "<button type='submit'>ReAnalayze</button></form>";
-    
-        function my_comp($cord1,$cord2){
-            if ($cord1['num_near'] == $cord2['num_near']) return 0;
-            return ($cord1['num_near'] < $cord2['num_near']) ? -1 : 1;
-        }
-    
-    ?><br/>
+    ?>
+<br/>
     
 Number Of Distances Per Group:<br/>
    <canvas id="barCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas>
