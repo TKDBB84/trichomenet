@@ -411,7 +411,7 @@ $sql_shift_points_back_in_temp_table->execute() or die($sql_shift_points_back_in
 
 
 
-~~//~~~~~~~~~~~~~~~~~~~~~~~~~CREATE EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~CREATE EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $x_divs = array();
 $y_divs = array();
 for($i = 0 ; $i < $num_boxes_x ; $i++){
