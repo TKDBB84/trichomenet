@@ -34,7 +34,7 @@ echo '<table border="1">',
             '<th>Leaf Name</td>',
             '<th>Image</td>',
             '<th>Number of<br/>Marked Tricombs</th>',
-            //'<th/>',
+            '<th/>',
         '</tr>';
 
 if(count($result) > 0){
@@ -59,11 +59,12 @@ if(count($result) > 0){
         $auto = $row2['cnt'];
         $stmt_get_num_tricomes->closeCursor();
         
-        echo '<tr>',
+        echo '<tr id="',$row['leaf_id'],'">',
                 '<td>',$row['leaf_name'],'</td>',
                 '<td align="center"><img src="./pics/',$row['file_name'],'_thumb.jpg"/></td>',
                 '<td> Marginal: ',$outer,'<br/>Laminal: ',$inner,'<br/>Auto: ',$auto,'<br/></td>',
-                '<td><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Edit</a></td>',
+                '<td><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Mark<br/>Trichomes</a></td>',
+                '<td><button type="button" name="del" onClick="delLeaf(',$row['leaf_id'],');">Delete</button>',
              '</tr>';
         
     }

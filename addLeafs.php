@@ -7,7 +7,8 @@ $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPasswo
 
 if(isset($_POST)){
     if(isset($_POST['add_new_leaf'])){
-        $uploaddir = '/home/eglabdb/html5test/pics/';
+        $ini_settings = parse_ini_file('./settings.ini',true);
+        $uploaddir = $ini_settings['Fiji']['Picture_Path'].'/';
         if($_FILES['new_leaf_file']['type']  == 'image/jpeg'){
             $filename = strtolower(basename($_FILES['new_leaf_file']['name'])); 
             $exts = split("[/\\.]", $filename) ; 
@@ -15,10 +16,13 @@ if(isset($_POST)){
             $exts = $exts[$n];
             $filename ="img_".md5(uniqid(rand(), true));
             $uploadfile = $uploaddir . $filename;
-            if (move_uploaded_file($_FILES['new_leaf_file']['tmp_name'], $uploadfile.".$exts")) {
+            $full_name = $uploadfile.'.'.$exts;
+            if (move_uploaded_file($_FILES['new_leaf_file']['tmp_name'], $full_name)) {
+                chmod($full_name,0644);
                 echo "File was successfully uploaded<br/>";
-                $dest = $uploadfile."_thumb.$exts";
-                make_thumb($uploadfile.".$exts",$dest,200);
+                $dest = $uploadfile.'_thumb.'.$exts;
+                make_thumb($full_name,$dest,200);
+                chmod($dest,0644);
                 $genotype_id = $_POST['genotype_id'];
                 if(empty($_POST['new_leaf_name']))
                     $leaf_name = 'New Leaf';
@@ -37,7 +41,7 @@ if(isset($_POST)){
                 echo '<br/>';
             }
         }else{
-            echo "Only JPG & JPEG files are currently supported";
+            echo "Only JPG & JPEG files are currently supported<br/>";
         }
     }
 }
@@ -89,6 +93,28 @@ reset($genotypes);
         xmlhttp.open("GET","leafsbygenotype.php"+sendstr,true);
         xmlhttp.send();
     }
+    
+    function delLeaf(leaf_id){
+        var xmlhttp;
+        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp=new XMLHttpRequest();
+        }else{// code for IE6, IE5
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function(){
+            if (xmlhttp.readyState==4 && xmlhttp.status==200){
+                if(xmlhttp.responseText === '1'){
+                    var row = document.getElementById(leaf_id);
+                    row.parentNode.removeChild(row);
+                }else{
+                    alert('An Error Occured Please Refresh and Try Again\nYour Session May Have Timed-out');
+                }
+            }
+        }
+        var sendstr = "?leaf_id="+leaf_id;
+        xmlhttp.open("GET","delLeaf.php"+sendstr,true);
+        xmlhttp.send();
+    }
 </script>
 
 View All Leafs In Genotype:
@@ -99,7 +125,7 @@ View All Leafs In Genotype:
 ?>
 </select>
 <br/><br/><br/>
-<form action="./index.php" method="post" enctype="multipart/form-data">
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data">
 <header><b>Leafs For: </b></header>     
 <div id="leafs" style="padding-left: 20px;"></div>
 </form>

@@ -10,7 +10,7 @@ $_SESSION['show_bar_graph'] = $_POST['show_bar_graph'];
 $_SESSION['bar_range'] = $_POST['bar_range'];
 $_SESSION['num_boxes_x'] = $_POST['num_boxes_x'];
 $_SESSION['num_boxes_y'] = $_POST['num_boxes_y'];
-$_SESSION['edge'] = $_POST['edge'];
+$_SESSION['edge'] = isset($_POST['edge'])?$_POST['edge']:0;
 $_SESSION['count_outer'] = $_POST['count_outer'];
 $_SESSION['show_values'] = $_POST['show_values'];
 $_SESSION['graph_bin_size'] = $_POST['graph_bin_size'];
@@ -322,6 +322,8 @@ foreach($leaf_ids as $leaf_id){
 
 //~~~~~~~~~~~~~~~~~~GET NEXT NEIGHBOR DISTANCES AND BIN THEM~~~~~~~~~~~~~~~~~~~~
 $next_neighbor_distances_bins = array();
+$all_next_neighbor_dist = array();
+$num_next_neighbor_dists = array();
 $sql_get_nnd_from_dist_table_by_leaf_id = $pdo_dbh->prepare('SELECT min(distance) as dist FROM `:dist_table` WHERE leaf_id = :leaf_id group by x1,y1');
 $sql_get_nnd_from_dist_table_by_leaf_id->bindParam(':dist_table',$temp_dist_table,PDO::PARAM_STR);
 $sql_get_nnd_from_dist_table_by_leaf_id->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
@@ -389,7 +391,7 @@ $sql_get_all_cords_from_table->closeCursor();
 $min_y = abs($min_y);
 $max_y = abs($max_y);
 $mid_y = ($min_y + $max_y)/2;
-$min_y += 480-$mid_y;
+$min_y += (.5*$image_y)-$mid_y;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -410,8 +412,7 @@ $sql_shift_points_back_in_temp_table->execute() or die($sql_shift_points_back_in
 
 
 
-
-~~//~~~~~~~~~~~~~~~~~~~~~~~~~CREATE EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~CREATE EACH BOX~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $x_divs = array();
 $y_divs = array();
 for($i = 0 ; $i < $num_boxes_x ; $i++){
