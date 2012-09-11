@@ -438,11 +438,13 @@ $sql_get_cords_from_table_by_leaf = $pdo_dbh->prepare($temp_string);
 $sql_get_cords_from_table_by_leaf->bindParam(':table_name',$table_name,PDO::PARAM_STR);
 $sql_get_cords_from_table_by_leaf->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
 
+$found_boxes[] = array();
 foreach($leaf_ids as $leaf_id){
     $boxes_by_leaf[$leaf_id] = array();
     $box_number = 0;
     for($i = 0 ; $i < ($num_boxes_y) ; $i++){
         for($j = 0 ; $j < ($num_boxes_x) ; $j++){
+            $found_trichomes = false;
             $sql_get_cords_from_table_by_leaf->execute() or die($sql_get_cords_from_table_by_leaf->queryString.'lala<br/><br/>'.var_dump($sql_get_cords_from_table_by_leaf->errorInfo()));
             while($row = $sql_get_cords_from_table_by_leaf->fetch(PDO::FETCH_ASSOC)){
                 $cord = array();
@@ -452,25 +454,32 @@ foreach($leaf_ids as $leaf_id){
                     if($cord['x'] <= $x_divs[$j] && $cord['y'] <= $y_divs[$i]){
                         if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
+                        $found_trichomes = true;
                     }
                 }elseif($j == 0){
                     if($cord['x'] <= $x_divs[$j] && ($cord['y'] <= $y_divs[$i] && $cord['y'] > $y_divs[$i-1])){
                         if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
+                        $found_trichomes = true;
                     }
                 }elseif($i == 0){
                     if(($cord['x'] <= $x_divs[$j] && $cord['x'] > $x_divs[$j-1]) && $cord['y'] <= $y_divs[$i]){
                         if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
+                        $found_trichomes = true;
                     }
                 }else{
                     if(($cord['x'] <= $x_divs[$j] && $cord['x'] > $x_divs[$j-1]) && ($cord['y'] <= $y_divs[$i] && $cord['y'] > $y_divs[$i-1])){
                         if(!isset($boxes_by_leaf[$leaf_id][$box_number])) $boxes_by_leaf[$leaf_id][$box_number] = 0;
                         $boxes_by_leaf[$leaf_id][$box_number]++;
+                        $found_trichomes = true;
                     }
                 }
             }
             $box_number++;
+            if($found_trichomes && !in_array($box_number, $found_boxes)){
+                    $found_boxes[] = $box_number;
+            }
         }
     }
 }
@@ -501,7 +510,7 @@ foreach($leaf_ids as $leaf_id){
             $std_div_by_leaf[$leaf_id] += $boxes_by_leaf[$leaf_id][$i];
         }
     }
-    $std_div_by_leaf[$leaf_id] /= $box_number;
+    $std_div_by_leaf[$leaf_id] /= (count($found_boxes) - 1 );
 }
 
 $box_std_dev = array();
@@ -524,10 +533,77 @@ foreach($all_boxes as $box_num => $total_in_box){
 
 
 ?>
-
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript">
-window.onload = init;
+
+      // Load the Visualization API and the piechart package.
+      
+      google.load('visualization', '1.0', {'packages':['corechart']});
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+          // Create the data table.
+          <?php
+            $sql_get_leaf_name_by_id = $pdo_dbh->prepare('SELECT `leaf_name` from leafs WHERE leaf_id = :leaf_id');
+            $sql_get_leaf_name_by_id->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
+            $output_string = '[\'Distances\',';
+            foreach($leaf_ids as $leaf_id){
+                $sql_get_leaf_name_by_id->execute();
+                $row = $sql_get_leaf_name_by_id->fetch(PDO::FETCH_ASSOC);
+                $output_string .= '\''.$row['leaf_name'].'\',';
+            }
+            $output_string .= '\'Average\'';//substr($output_string,0,-1);
+            $output_string .= '],';
+            foreach($BIN_SIZES as $bin_num => $size){
+                $tmp_string = '[\'>'.$size.'\',';
+                $is_zero = 0;
+                $all_values = array();
+                foreach($leaf_ids as $leaf_id){
+                    if(isset($bins_per_leaf[$leaf_id][$bin_num])){
+                        $tmp_string .= $bins_per_leaf[$leaf_id][$bin_num].',';
+                        $all_values[] = $bins_per_leaf[$leaf_id][$bin_num];
+                    }else{
+                        $tmp_string .= "0,";
+                        $is_zero++;
+                        $all_values[] = 0;
+                    }
+                }
+                $tmp_string .= array_sum($all_values)/count($all_values);
+                $tmp_string .= "],";
+                if($is_zero == count($leaf_ids)) $tmp_string = '';
+                $output_string .= $tmp_string;
+            }
+            $output_string = substr($output_string,0,-1);
+         ?>
+        var data = google.visualization.arrayToDataTable([<?php echo $output_string; ?>]);
+
+        // Set chart options
+        var options = {title : 'Next Neighbor Distances',
+                        width: 800,
+                        height: 600,
+                        vAxis: {title: "Number Found"},
+                        hAxis: {title: "Distance Bins"},
+                        seriesType: "bars",
+                        series: {<?php echo count($leaf_ids); ?>: {type: "line"} }
+                      };
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+        <?php if($SHOW_BIN_GRAPH)
+                echo 'chart.draw(data, options);'; ?>
+        init();
+      }
+      
+      
         function init() {
+            
+            
+            
+            
             sessionStorage.clear();
             <?php
                
@@ -592,7 +668,7 @@ window.onload = init;
                 $i = 0;
                     
                     $color_by_leaf_id = array();
-                    $sql_get_leaf_name_by_id = $pdo_dbh->prepare('SELECT `leaf_name` from leafs WHERE leaf_id = :leaf_id');
+                    //$sql_get_leaf_name_by_id = $pdo_dbh->prepare('SELECT `leaf_name` from leafs WHERE leaf_id = :leaf_id');
                     $sql_get_leaf_name_by_id->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
                     foreach($leaf_ids as $leaf_id){
                         $sql_get_leaf_name_by_id->execute() or die($sql_get_cords_from_table_by_leaf->queryString.'lala<br/><br/>'.var_dump($sql_get_cords_from_table_by_leaf->errorInfo()));
@@ -658,57 +734,6 @@ window.onload = init;
                     }
                 }
                 
-                if($SHOW_BIN_GRAPH){
-                   
-                                        
-                    $Bins = array();
-                    foreach($leaf_ids as $leaf_id){
-                        $NUM_OF_BINS = count($BIN_SIZES);
-                        $k = 0;
-                        for( ; $k < $NUM_OF_BINS-1 ; $k++ ){
-                            if(isset($bins_per_leaf[$leaf_id][$k])){
-                                if(!isset($Bins[$k])) $Bins[$k] = 0;
-                                $Bins[$k] += $bins_per_leaf[$leaf_id][$k];
-                            }
-                        }
-                        if(isset($bins_per_leaf[$leaf_id][$k]))
-                            $Bins[$k] += $bins_per_leaf[$leaf_id][$k];
-                    }
-                    $total_boxes = count($Bins);
-                    
-                    
-                    $max_height = -1;
-                    foreach($leaf_ids as $leaf_id){
-                        if($max_height < max($bins_per_leaf[$leaf_id]) )
-                            $max_height = max($bins_per_leaf[$leaf_id]);
-                    }
-                    
-                    $max_height += 15;
-                    
-                    $width = ( ($image_x - (5 * $total_boxes)) / $total_boxes );
-                    foreach($BIN_SIZES as $bin_num => $size){
-                        if(isset($Bins[$bin_num])){
-                            $avg_in_bin = 0;
-                            $all_values_temp = array();
-                            foreach($leaf_ids as $leaf_id){
-                                if(isset($bins_per_leaf[$leaf_id][$bin_num]) && $bins_per_leaf[$leaf_id][$bin_num] != null)
-                                    $all_values_temp[] = $bins_per_leaf[$leaf_id][$bin_num];
-                            }
-                            
-                            
-                            $height = ( stndev($all_values_temp) / $max_height ) * $image_y;
-                            
-                            $std_avg = array_sum($all_values_temp)/count($leaf_ids);
-                            $std_avg_cord = ( ( $std_avg ) / $max_height) * $image_y;
-                            
-                            if(!isset($max_inBox)) $max_inBox = 0;
-                            elseif($max_inBox == '') $max_inBox = 0;
-                            echo "addBar(",$height,",$width,$size,'black',",$std_avg_cord,",$std_avg);";
-                            
-                        }
-                    }
-                    
-                }
             ?>
             
         }
@@ -929,8 +954,8 @@ window.onload = init;
     canvas { background:url('./pics/blank.jpg') }
 </style>
 <?php
-echo 'Average Distance On Single Leaf: ',$all_leaf_avg/$number_of_leafs,"<br/>";
-echo 'AVG PER BOX PER LEAF: ',array_sum($all_boxes)/($box_number+$additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
+
+echo '<br/><br/> AVG PER BOX PER LEAF: ',array_sum($all_boxes)/(count($found_boxes) - 1 + $additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
      ' <em>(this only counts boxes that have tricomes in them)</em><br/>';
 ?>
 <canvas id="myCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas>
@@ -951,14 +976,11 @@ echo 'AVG PER BOX PER LEAF: ',array_sum($all_boxes)/($box_number+$additional_box
             "<button type='submit'>ReAnalayze</button></form>";
     ?>
 <br/>
-    
-Number Of Distances Per Group:<br/>
-   <canvas id="barCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas>
-    <img>
-    
+    <div id="chart_div"></div>
     <div id="csv" style="padding-bottom: 50px; padding-top: 50px;">
         <button type="button" onClick="makeCSV();">Export Data</button>
     </div>
+<br/><br/>
 
     
     
