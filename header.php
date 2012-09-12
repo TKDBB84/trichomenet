@@ -16,7 +16,7 @@ if(isset($_SESSION['user_id'])){
     
     <tr>
         <td><a href="./addLeafs.php" onClick='sessionStorage.clear();'>Add/Edit Leafs</a></td>
-        <td><a href="./admin.php" onClick='sessionStorage.clear();'>Add GenoTypes</a></td>
+        <td><a href="./addGenotypes.php" onClick='sessionStorage.clear();'>Add GenoTypes</a></td>
         <td><a href="./analyze3.php" onClick='sessionStorage.clear();'>Analyze</a></td>
     </tr>
 </table>

@@ -44,7 +44,7 @@ if(isset($_POST['genotype_id'])){
 ?>
 <body>
 <header><b>Genotypes</b></header>
-<form action="./admin.php" method="POST">
+<form action="./addGenotypes.php" method="POST">
     <div id="genotypes" style="padding-left: 20px;">
     <table border="1">
         <tr>

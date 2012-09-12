@@ -11,6 +11,7 @@ root {
 }
 
 .header {
+    
     background-color: #8ebe46;
     margin-top: 5mm;
     margin-left: 1%;
@@ -20,6 +21,16 @@ root {
     right: 1%;
     left: 1%;
     text-decoration: none;
+}
+
+#logo{
+    background-image: url('../pics/logo.png');
+    background-size:100px 100px;
+    background-repeat: no-repeat;
+    margin-left: 50px;
+    height: 95px;
+    width: 95px;
+    float: left;
 }
 
 #logo_text{
@@ -91,7 +102,7 @@ body{
     width: 14%;
     height: 100%;
     padding-top: 75px;
-    background-color: #cccccc;
+    background-color: #c8c8c8;
     text-align: center;
     margin-bottom: 150px;   
 }
@@ -131,3 +142,32 @@ canvas {
     border:1px solid black;
     
 }
+
+#login{
+    position: relative;
+    margin-top: 100px;
+    margin-left: 15%;
+    margin-right: 20%;
+    padding-left: 50px;
+    padding-top: 50px;
+    border-color: #c8c8c8;
+    border-style: solid;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    padding-bottom: 50px;
+}
+
+.footer{
+   background-color: #8ebe46;
+   position: relative;
+   bottom: 0;
+   height: 120px;   /* Height of the footer */
+    margin-top: 5mm;
+    margin-left: 1%;
+    margin-right: 2%;
+    top: 5mm;
+    right: 1%;
+    left: 1%;
+   text-decoration: none;
+}
+

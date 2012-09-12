@@ -92,7 +92,7 @@ if($error){
     //echo '<head><meta http-equiv="REFRESH" content="0;url=./register.php"></head>';
 }else{
     $_SESSION['user_id'] = $new_user_id;
-    header('Location: ./addLeafs.php');
+    header('Location: ./addGenotypes.php');
 }
 
 ?>

@@ -15,9 +15,9 @@ if(isset($_POST['email']) && isset($_POST['pass'])){
    $stmt_get_hash->closeCursor();
    if($bcrypt->verify($supplied_pass, $hash)){
       $_SESSION['user_id'] = $user_id;
-      header('Location: ./addLeafs.php');
+      header('Location: ./addGenotypes.php');
    }else{
       $_SESSION['error_text'] = "Invalid Username & Password<br/>";
-      header('Location: ./index.php');
+      header('Location: ./login.php');
    }
  } ?>
