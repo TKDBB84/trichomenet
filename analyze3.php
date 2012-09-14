@@ -1,7 +1,6 @@
 <?php
 if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
-include_once 'header.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 $user_id = $_SESSION['user_id'];
@@ -28,7 +27,13 @@ reset($genotypes);
 $first_key = key($genotypes);
 reset($genotypes);
 ?>
-
+<!DOCTYPE html>
+<html>
+    <head>
+        <LINK href="./css/trichomenet.css" rel="stylesheet" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css" media="screen"></style>
+        <title>TrichomeNet</title>
 <script type="text/javascript">
     function getGenotype(id){
         var genotype_id = id;
@@ -169,22 +174,57 @@ reset($genotypes);
     }
   
 </script>
-
-
-
-
-View Genotype:
+</head>
 <body onload="getGenotype(<?php echo isset($curr_genotype)?$curr_genotype:$first_key; ?>);">
-<select id="geno_select" onChange="getGenotype(this.value)">
-<?php foreach($genotypes as $id => $genotype){
-        echo '<option value="',$id,'"';
-        if(isset($curr_genotype))
-            if($curr_genotype == $id) echo ' selected';
-        echo '>',$genotype,'</option>';
-}
-?>
-</select>
-    <div id="main">
-        
-    </div>
-</body>
+    <div class="header">
+            <div class="header" id="logo"></div>
+            <div class="header" id="logo_text">
+                <a class="header" href="#"><span>TRICHOME<span>NET</span></span></a>
+                <br/>
+
+            </div>
+
+            <div class="linkblock">
+                <table id="link_table">
+                    <tr>
+                        <?php include 'linktable.php'; ?>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="sidebar">
+            <span>Step 1: Do Stuff</span>
+            <br/><br/>
+            <span>Step 2: Do More Stuff</span>
+            <br/><br/>
+            <span>Step 3: Do Other Stuff</span>
+            <br/><br/>
+            <span>Step 4: Do Last Stuff</span>
+            <br/><br/>
+        </div>
+        <div class="contents">
+            <div id="contents_header">
+                Select Leaves From Genotype:<br/>
+                <select id="geno_select" onChange="getGenotype(this.value)">
+                    <?php 
+                        foreach($genotypes as $id => $genotype){
+                            echo '<option value="',$id,'"';
+                            if(isset($curr_genotype))
+                                if($curr_genotype == $id) echo ' selected';
+                            echo '>',$genotype,'</option>';
+                          }
+                    ?>
+                </select>
+            </div>
+            <div id="main_contents">
+                <div id="framed">
+                    <div id="main"></div>
+                </div>
+            </div>
+            <div id="push"></div>
+        </div>
+    <div class="footer">
+            <img src="./pics/osu.png" width="100" height="100" style="float: right; margin-right: 50px; margin-top: 10px">
+        </div>
+    </body>
+</html>

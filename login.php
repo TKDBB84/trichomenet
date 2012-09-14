@@ -40,7 +40,7 @@ if(!isset($_SESSION)) session_start();
                     
                 </div>
                 <div id="main_contents">
-                    <div id="login">
+                    <div id="framed">
                         <?php
                             if (isset($_SESSION['error_text'])) {
                                 echo '<span style="color:red;">', $_SESSION['error_text'], '</span>';

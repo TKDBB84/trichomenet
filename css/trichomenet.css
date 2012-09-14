@@ -65,7 +65,7 @@ a.header:hover span span{
 }
 
 .linkblock {
-    
+    height: 35px;
     background-color: #749939;
     margin-bottom: 1cm;
     
@@ -82,7 +82,7 @@ a.header:hover span span{
 }
 
 #link_table{
-    width: 85%;
+    width: 80%;
     height: 100%;
     font-size: 1.3em;
     text-align: center;
@@ -96,11 +96,12 @@ body{
 }
 
 .sidebar{
-    position: absolute;
+    position: relative;
+    float: right;
     top: -38px;
     right: 1%;
     width: 14%;
-    height: 100%;
+    height: 60%;
     padding-top: 75px;
     background-color: #c8c8c8;
     text-align: center;
@@ -113,13 +114,16 @@ body{
 }
 
 .contents{
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -120px; /* the bottom margin is the negative value of the footer's height */
     position: relative;
     top: -38px;
-    height: 100%;
     width: 84%;
     left: 1%;
     padding-top: 30px;
-    margin-bottom: 150px;   
+    
 }
 
 #contents_header{
@@ -131,6 +135,7 @@ body{
 
 #main_contents{
     position: relative;
+    height: auto;
     margin-left: 75px;
     margin-right: 75px;
     height: 100%;
@@ -143,8 +148,9 @@ canvas {
     
 }
 
-#login{
+#framed{
     position: relative;
+    height: auto;
     margin-top: 100px;
     margin-left: 15%;
     margin-right: 20%;
@@ -157,17 +163,44 @@ canvas {
     padding-bottom: 50px;
 }
 
+
+.footer, .push {
+       
+	height: 120px; /* .push must be the same height as .footer */
+}
+
 .footer{
    background-color: #8ebe46;
-   position: relative;
-   bottom: 0;
-   height: 120px;   /* Height of the footer */
-    margin-top: 5mm;
-    margin-left: 1%;
-    margin-right: 2%;
-    top: 5mm;
-    right: 1%;
-    left: 1%;
+   margin-left: 1%;
+   margin-right: 2%;
+   margin-top: 100px;
+   right: 1%;
+   left: 1%;
    text-decoration: none;
 }
 
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('http://i.stack.imgur.com/FhHRx.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
+}

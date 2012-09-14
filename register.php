@@ -79,7 +79,7 @@ if (!isset($_SESSION))
                     Thank You For Registering
                 </div>
                 <div id="main_contents">
-                    <div id="login">
+                    <div id="framed">
                         <form method="post" action="./mkuser.php">
                             <?php
                             if (isset($_SESSION['error_text'])) {

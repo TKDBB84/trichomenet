@@ -33,8 +33,6 @@ while($row = $stmt_get_leafs_by_genotype->fetch(PDO::FETCH_ASSOC)){
 unset($leaf_id);
 $stmt_get_leafs_by_genotype->closeCursor();
 ?>
-<hr/><br/>
-
 <form action="alignpoints3.php" method="post" onSubmit="return loop_select();">
     <input type="hidden" name="genotype_id" value="<?php echo $genotype_id; ?>"/>
 <table rules="groups">
