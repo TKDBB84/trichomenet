@@ -64,7 +64,12 @@ if(count($result) > 0){
                 '<td align="center"><img src="./pics/',$row['file_name'],'_thumb.jpg"/></td>',
                 '<td> Marginal: ',$outer,'<br/>Laminal: ',$inner,'<br/>Auto: ',$auto,'<br/></td>',
                 '<td><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Mark<br/>Trichomes</a></td>',
-                '<td><button type="button" name="del" onClick="delLeaf(',$row['leaf_id'],');">Delete</button>',
+                '<td><button type="button" name="del" onClick=',
+                    ($user_id == 0)?
+                        '"alert(\'Guests Cannot Delete\');"'
+                      :
+                        '"delLeaf(',$row['leaf_id'],');"',
+                '>Delete</button>',
              '</tr>';
         
     }
@@ -72,7 +77,9 @@ if(count($result) > 0){
 echo '<tr>',
             '<td><input type="text" name="new_leaf_name"/></td>',
             '<td><input type="file" name="new_leaf_file" /></td>',
-            '<td><button type="submit" name="add_new_leaf">Add New</button></td>',
+            '<td><button type="submit" name="add_new_leaf"',
+                ($user_id == 0)?' onClick="alert(\'Guests Cannot Add Data\');return false;"':'',
+            '>Add New</button></td>',
     '</tr>',
  '</table>','<em>pictures MUST BE 5 MB or smaller</em>';
 ?>

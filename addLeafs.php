@@ -2,10 +2,11 @@
 if(!isset($_SESSION)) session_start();
 include_once 'header.php';
 include_once 'connection.php';
+$user_id = $_SESSION['user_id'];
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 
-if(isset($_POST)){
+if(isset($_POST) && $user_id !=0){
     if(isset($_POST['add_new_leaf'])){
         $ini_settings = parse_ini_file('./settings.ini',true);
         $uploaddir = $ini_settings['Fiji']['Picture_Path'].'/';
@@ -95,25 +96,28 @@ reset($genotypes);
     }
     
     function delLeaf(leaf_id){
-        var xmlhttp;
-        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function(){
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                if(xmlhttp.responseText === '1'){
-                    var row = document.getElementById(leaf_id);
-                    row.parentNode.removeChild(row);
-                }else{
-                    alert('An Error Occured Please Refresh and Try Again\nYour Session May Have Timed-out');
+        var conf = confirm('This Will Also Delete\nAll Trichomes\nFor This Leaf\nDo You Wish To Proceed?');
+        if(conf){
+            var xmlhttp;
+            if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+                xmlhttp=new XMLHttpRequest();
+            }else{// code for IE6, IE5
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange=function(){
+                if (xmlhttp.readyState==4 && xmlhttp.status==200){
+                    if(xmlhttp.responseText === '1'){
+                        var row = document.getElementById(leaf_id);
+                        row.parentNode.removeChild(row);
+                    }else{
+                        alert('An Error Occured Please Refresh and Try Again\nYour Session May Have Timed-out');
+                    }
                 }
             }
+            var sendstr = "?leaf_id="+leaf_id;
+            xmlhttp.open("GET","delLeaf.php"+sendstr,true);
+            xmlhttp.send();
         }
-        var sendstr = "?leaf_id="+leaf_id;
-        xmlhttp.open("GET","delLeaf.php"+sendstr,true);
-        xmlhttp.send();
     }
 </script>
 
@@ -125,7 +129,11 @@ View All Leafs In Genotype:
 ?>
 </select>
 <br/><br/><br/>
-<form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data">
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data"
+    <?php if($user_id == 0)
+            echo 'onSubmit="return false;"';
+    ?>
+                                                                                                            >
 <header><b>Leafs For: </b></header>     
 <div id="leafs" style="padding-left: 20px;"></div>
 </form>

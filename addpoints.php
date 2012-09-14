@@ -1,9 +1,9 @@
-<!DOCTYPE html>
 <?php
+if(!isset($_SESSION)) session_start();
 include_once 'header.php';
 include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
-
+$user_id = $_SESSION['user_id'];
 
 $has_tip = array();
 $leaf_id = $_GET['leaf_id'];
@@ -290,15 +290,8 @@ $stmt_get_cords_by_leafid->closeCursor();
 <input type="radio" id="inner" name="type" onclick='unCheckDelete();'>Inner<br/>
 <input type="checkbox" id='del' onclick='unSelectRadio();'/>Delete<br/>
 <button onclick="clearmything(false);">Clear</button>
-<button onclick="saveIt();">Save</button>
+<button onclick="saveIt();" <?php if($user_id == 0) echo 'disabled="disabled"';?>>Save</button>
 
 </body>
 <div id="csv"></div>
-<table id='datatable' style="">
-    <tr>
-        <td>X cord</td>
-        <td>Y cord</td>
-        <td>Type</td>
-    </tr>
-</table>
 </html>    

@@ -1,4 +1,6 @@
 <?php
+if(!isset($_SESSION)) session_start();
+if($_SESSION['user_id'] == 0) die('Guests Cannot Save Changes!');
 include_once 'connection.php';
 $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
