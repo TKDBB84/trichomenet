@@ -102,7 +102,7 @@ if (isset($_POST['genotype_id'])) {
             </div>
             <div class="contents">
                 <div id="contents_header">
-                    <header><b>Genotypes</b></header>
+                    <b>Genotypes</b>
                 </div>
                 <div id="main_contents">
                     <form action="./addGenotypes.php" method="POST">

@@ -1,9 +1,5 @@
-<?php if(!isset($_SESSION)) session_start(); ?>
-<link rel="stylesheet" href="css/styles.css" type="text/css">
-<?php
-include_once 'header.php';
+<?php if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
-$pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
 
 $has_tip = array();
 $leaf_id = $_GET['leaf_id'];
@@ -11,7 +7,7 @@ $leaf_id = $_GET['leaf_id'];
 $stmt_get_leaf_details = $pdo_dbh->prepare("SELECT file_name,tip_x,tip_y FROM `leafs` WHERE leaf_id = :leaf_id");
 $stmt_get_leaf_details->bindValue(':leaf_id', $leaf_id, PDO::PARAM_INT);
 $stmt_get_leaf_details->execute();
-//$result = $pdo_
+
 $row = $stmt_get_leaf_details->fetch(PDO::FETCH_ASSOC);
 if(is_null($row['tip_x']) || is_null($row['tip_y'])){
     $has_tip['has'] = false;
@@ -40,7 +36,13 @@ while($row = $stmt_get_leaf_cords->fetch(PDO::FETCH_ASSOC)){
 }
 $stmt_get_leaf_cords->closeCursor();
 ?>
-
+<!DOCTYPE html>
+<html>
+    <head>
+        <LINK href="./css/trichomenet.css" rel="stylesheet" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css" media="screen"></style>
+        <title>TrichomeNet</title>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"> </script> 
 <script type="text/javascript">
     
@@ -224,18 +226,6 @@ $stmt_get_leaf_cords->closeCursor();
         }
     }
 
-    /*function addRow(tableID,x,y,type) {
-        var table = document.getElementById(tableID);
-        var rowCount = table.rows.length;
-        var row = table.insertRow(rowCount);
-        var cell1 = row.insertCell(0);
-        cell1.innerHTML = x.toString();
-        var cell2 = row.insertCell(1);
-        cell2.innerHTML = y.toString();
-        var cell3 = row.insertCell(2);
-        cell3.innerHTML = type.toString();
-    }*/
-    
     function clearmything(clrsession){
         var confm = true;
         if(clrsession == false){
@@ -250,8 +240,6 @@ $stmt_get_leaf_cords->closeCursor();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, c.width, c.height);
             ctx.restore();
-            //var table = document.getElementById('datatable');
-            //table.innerHTML = "<tr><td>X cord</td><td>Y cord</td><td>Type</td></tr>";
             document.getElementById('tip').disabled = false;
         }
     }
@@ -349,7 +337,6 @@ $stmt_get_leaf_cords->closeCursor();
         ctx.arc(x,y,5,0,Math.PI*2,true);
         ctx.closePath();
         ctx.stroke();
-        //addRow('datatable',x,y,type);
         var i = (sessionStorage.length - 1 )/ 3;
         var key = "X"+i;
         sessionStorage.setItem(key, x);
@@ -359,38 +346,65 @@ $stmt_get_leaf_cords->closeCursor();
         sessionStorage.setItem(key, type);
     }
 </script>
-
-<body onload="loadPage();"> 
-  <style type="text/css" media="screen">
-    canvas, img { display:block;  border:1px solid black; }
-    canvas { background:url(<?php echo $filepath; ?>) }
-  </style>
 </head>
 
-<canvas id="myCanvas" width="<?php echo $width; ?>" height="<?php echo $height; ?>" onmousedown="draw();"></canvas>
-<!--<img>--><br/>
-Set Sensitivity:<br/>
-<input id="rng" type="range" min="0" max="255" value="100" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
-<input  id="txt" type="text" value="100" size="3" readonly/>
-<button onClick="getAutoCords(document.getElementById('txt').value)">Find Tricomes</button>
-<br/>
-<input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/>Mark Leaf Tip<br/>
-<input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>>Outer<br/>
-<input type="radio" id="inner" name="type" onclick='unCheckDelete();'>Inner<br/>
-<input type="checkbox" id='del' onclick='unSelectRadio();'/>Delete<br/>
-<button onclick="clearmything(false);">Clear</button>
-<button onclick="saveIt();">Save</button>
 
-</body>
-<div id="csv"></div>
-<!--
-<table id='datatable' style="">
-    <tr>
-        <td>X cord</td>
-        <td>Y cord</td>
-        <td>Type</td>
-    </tr>
-</table>
--->
-</body>
-<!--<div class="modal"><!-- Place at bottom of page </div>-->
+<body onload="loadPage();"> 
+<div class="header">
+            <div class="header" id="logo"></div>
+            <div class="header" id="logo_text">
+                <a class="header" href="#"><span>TRICHOME<span>NET</span></span></a>
+                <br/>
+
+            </div>
+
+            <div class="linkblock">
+                <table id="link_table">
+                    <tr>
+                        <?php include 'linktable.php'; ?>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!--<div style="height:100%; width: 100%; position: relative;">-->
+        <div class="sidebar">
+            <span>Step 1: Do Stuff</span>
+            <br/><br/>
+            <span>Step 2: Do More Stuff</span>
+            <br/><br/>
+            <span>Step 3: Do Other Stuff</span>
+            <br/><br/>
+            <span>Step 4: Do Last Stuff</span>
+            <br/><br/>
+        </div>
+        <div class="contents" style="margin-left: 2%;">
+            <div id="contents_header">
+                <b>Mark Trichomes</b>
+            </div>
+            <div id="main_contents" style="margin-left: 0px;">
+                <div id="framed" style="margin-left: 0px; margin-right: 0px;">
+                    <canvas id="myCanvas" onmousedown="draw();" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style="width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; background:url(<?php echo $filepath; ?>);"></canvas>
+                    <br/>
+                    Set Sensitivity:<br/>
+                    <input id="rng" type="range" min="0" max="255" value="100" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
+                    <input  id="txt" type="text" value="100" size="3" readonly/>
+                    <button onClick="getAutoCords(document.getElementById('txt').value)">Find Tricomes</button>
+                    <br/>
+                    <input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/>Mark Leaf Tip<br/>
+                    <input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>>Outer<br/>
+                    <input type="radio" id="inner" name="type" onclick='unCheckDelete();'>Inner<br/>
+                    <input type="checkbox" id='del' onclick='unSelectRadio();'/>Delete<br/>
+                    <button onclick="clearmything(false);">Clear</button>
+                    <button onclick="saveIt();">Save</button>
+                    <div id="csv"></div>
+                </div>
+            </div>
+            <div id="push"></div>
+        </div>
+        <div class="footer">
+            <img src="./pics/osu.png" width="100" height="100" style="float: right; margin-right: 50px; margin-top: 10px">
+        </div>
+    </body>
+    <div class="modal">
+</html>        

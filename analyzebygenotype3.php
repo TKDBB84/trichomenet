@@ -36,6 +36,7 @@ $stmt_get_leafs_by_genotype->closeCursor();
 <form action="alignpoints3.php" method="post" onSubmit="return loop_select();">
     <input type="hidden" name="genotype_id" value="<?php echo $genotype_id; ?>"/>
 <table rules="groups">
+    <thead>
     <tr>
         <td><strong>Select Leafs To Include:</strong></td>
         <td></td>
@@ -69,6 +70,8 @@ $stmt_get_leafs_by_genotype->closeCursor();
         <td>
         </td>
     </tr>
+    </thead>
+    <tbody>
     <tr>
         <td>
             <strong>Heat Map</strong>
@@ -99,6 +102,8 @@ $stmt_get_leafs_by_genotype->closeCursor();
             <input type="radio" name="show_values" value="0" <?php if(isset($_SESSION['show_values']) && $_SESSION['show_values'] == 0) echo 'checked'; ?>> No
         </td>    
     </tr>
+    </tbody>
+    <tbody>
     <tr>
         <td>
             <strong>Distances:</strong>
@@ -125,6 +130,8 @@ $stmt_get_leafs_by_genotype->closeCursor();
             <input type="number" name="nn_graph_bin_size" min="1" max="100" step="1" value="<?php if(isset($_SESSION['nn_graph_bin_size']) && $_SESSION['nn_graph_bin_size'] != 0) echo $_SESSION['nn_graph_bin_size']; else echo '10'; ?>"/>
         </td>
     </tr>
+    </tbody>
+    <tbody>
     <tr>
         <td>
             <strong>General</strong>
@@ -140,6 +147,7 @@ $stmt_get_leafs_by_genotype->closeCursor();
             <button type="Submit">Analyze Selected</button>
         </td>
     </tr>
+    </tbody>
 </table>
 </form>
 

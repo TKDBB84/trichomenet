@@ -81,6 +81,16 @@ a.header:hover span span{
     text-decoration: underline;
 }
 
+#link_table a span{
+    color: #000;
+    text-decoration: none;
+}
+
+#link_table a span:hover{
+    color: #000;
+    text-decoration: none;
+}
+
 #link_table{
     width: 80%;
     height: 100%;
@@ -143,7 +153,7 @@ body{
 
 canvas { 
     display:block;
-    margin:1em auto;
+    margin: auto;
     border:1px solid black;
     
 }

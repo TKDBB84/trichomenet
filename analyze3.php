@@ -204,7 +204,7 @@ reset($genotypes);
         </div>
         <div class="contents">
             <div id="contents_header">
-                Select Leaves From Genotype:<br/>
+                <b>Select Leaves From Genotype:<br/>
                 <select id="geno_select" onChange="getGenotype(this.value)">
                     <?php 
                         foreach($genotypes as $id => $genotype){
@@ -214,7 +214,7 @@ reset($genotypes);
                             echo '>',$genotype,'</option>';
                           }
                     ?>
-                </select>
+                </select></b>
             </div>
             <div id="main_contents">
                 <div id="framed">

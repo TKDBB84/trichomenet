@@ -158,13 +158,13 @@ reset($genotypes);
         </div>
         <div class="contents">
             <div id="contents_header">
-                <header><b>View All Leafs In Genotype:<br/>
+                <b>View All Leafs In Genotype:<br/>
                         <select id="geno_select" onChange="getLeafs()">
                             <?php
                             foreach ($genotypes as $id => $genotype)
                                 echo '<option value="', $id, '">', $genotype, '</option>';
                             ?>
-                        </select>
+                        </select></b>
             </div>
             <div id="main_contents">
                 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
