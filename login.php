@@ -32,6 +32,8 @@ if(!isset($_SESSION)) session_start();
                       <a href="https://github.com/TKDBB84/trichomenet">
                         TrichomeNet On Github
                       </a>
+                      <br/><br/>
+                      Or Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a>
                 </span>
                 
             </div>
