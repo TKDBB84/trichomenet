@@ -162,7 +162,7 @@ reset($genotypes);
     function loop_select() {
         var select_box = document.getElementById('selected');
         if(select_box.options.length < 2){
-            alert('You Must Select At Least 2 Leafs');
+            alert('You Must Select At Least 2 Leaves');
             return false;
         }
         for(i=0;i<=select_box.options.length-1;i++)

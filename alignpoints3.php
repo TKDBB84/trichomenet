@@ -46,7 +46,7 @@ $_SESSION['current_genotype'] = $_POST['genotype_id'];
     
     
     
-//~~~~~~~~~~~~~~~~~~~~~~~~~GET LIST OF LEAFS SELECTED~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~GET LIST OF LEAVES SELECTED~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $leaf_ids = array();
 $table_name = uniqid("tbl_",false);
 foreach($_POST['all_leaf_ids'] as $value){

@@ -175,7 +175,7 @@ reset($genotypes);
         </div>
         <div class="contents">
             <div id="contents_header">
-                <b>View All Leafs In Genotype:<br/>
+                <b>View All Leaves In Genotype:<br/>
                         <select id="geno_select" onChange="getLeafs()">
                             <?php
                             foreach ($genotypes as $id => $genotype)
@@ -187,7 +187,7 @@ reset($genotypes);
                 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
                             <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
                     <div id="framed">                    
-                        <b>Leafs For: </b>
+                        <b>Leaves For: </b>
                         <div id="leafs" style="padding-left: 20px;"></div>
                     </div>
                 </form>
