@@ -36,11 +36,11 @@ if(!isset($_SESSION))    session_start();
                 </div>
                 <div id="main_contents">
                     <p>
-                    TrichomeNet is an online resource to help analyze trichome development patterns in Arabidopsis.  However it may be useful
-                    for many other plants as well.
+                    Trichomenet is an trichome pattern analysis tool designed to work in conjuction with polarized light microscopy images of cleared leaves. The software can detect and analyze trichome positions including density heat map and next neighbor analyses.
                     </p>
                     <p>
-                    
+                    For more detailed descriptions and protocols, see our publication in The Plant Journal (Details of paper will be added after peer review).
+                    </p>
                     <!--<canvas style="height: 960px; width: 1280px; background:url(./img_0e5145924d9c945f931c3821b5518246.jpg) no-repeat center center;"/>-->
                 </div>
             </div>            

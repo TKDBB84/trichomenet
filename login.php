@@ -57,7 +57,7 @@ if(!isset($_SESSION)) session_start();
                             This Will Let You View Our Sample Data
                         </div>
                         <form method="post" action="chkUser.php">
-                            Username:<br/>
+                            Login (email):<br/>
                             <input type="text" name="email"/><br/>
                             Password:<br/>
                             <input type="password" name="pass"/><br/>

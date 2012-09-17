@@ -3,7 +3,7 @@ if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
 include_once 'Bcrypt.php';
 if(isset($_POST['email']) && isset($_POST['pass'])){
-   $email = $_POST['email'];
+   $email = strtolower($_POST['email']);
    $supplied_pass = $_POST['pass'];
    $bcrypt = new Bcrypt(15);
    $stmt_get_hash = $pdo_dbh->prepare("SELECT `user_id`,`password` FROM `users` WHERE `email` = :email LIMIT 1;");

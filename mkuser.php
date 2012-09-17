@@ -14,7 +14,7 @@ if(!isset($_POST['email']) || empty($_POST['email'])){
     $error = true;  //no email defined!!
     $error_text .= 'You Must Enter An Email Address<br/>';
 }else{
-    $email = $_POST['email'];
+    $email = strtolower($_POST['email']);
 }
 if(!isset($_POST['password']) || empty($_POST['password'])){
     $error = true; //no password

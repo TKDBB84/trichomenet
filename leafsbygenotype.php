@@ -34,7 +34,7 @@ echo '<table border="1">',
             '<th>Leaf Name</td>',
             '<th>Image</td>',
             '<th>Number of<br/>Marked Tricombs</th>',
-            '<th/>',
+            '<th colspan="3"/>',
         '</tr>';
 
 if(count($result) > 0){
@@ -64,6 +64,7 @@ if(count($result) > 0){
                 '<td align="center"><img src="./pics/',$row['file_name'],'_thumb.jpg"/></td>',
                 '<td> Marginal: ',$outer,'<br/>Laminal: ',$inner,'<br/>Auto: ',$auto,'<br/></td>',
                 '<td><a href="./findtricomes.php?leaf_id=',$row['leaf_id'],'">Mark<br/>Trichomes</a></td>',
+                '<td><button type="button" name="dwnld" onClick="fetchImg(',$row['leaf_id'],');">Download<br/>Image</button></td>',
                 '<td><button type="button" name="del" onClick=',
                     ($user_id == 0)?
                         '"alert(\'Guests Cannot Delete\');"'
@@ -75,9 +76,9 @@ if(count($result) > 0){
     }
 }
 echo '<tr>',
-            '<td><input type="text" name="new_leaf_name"/></td>',
-            '<td><input type="file" name="new_leaf_file" /></td>',
-            '<td><button type="submit" name="add_new_leaf"',
+            '<td colspan="2">Name: <input type="text" name="new_leaf_name" style="width:80%;"/></td>',
+            '<td colspan="2"><input type="file" name="new_leaf_file" /></td>',
+            '<td colspan="2"><button type="submit" name="add_new_leaf"',
                 ($user_id == 0)?' onClick="alert(\'Guests Cannot Add Data\');return false;"':'',
             '>Add New</button></td>',
     '</tr>',
