@@ -37,7 +37,7 @@ if(!isset($_SESSION))    session_start();
                 <div id="main_contents">
                     <p>
                     TrichomeNet is an online resource to help analyze trichome development patterns in Arabidopsis.  However it may be useful
-                    for many other plants as well. more text blah blah marcelo can write an introduction.
+                    for many other plants as well.
                     </p>
                     <p>
                     
