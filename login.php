@@ -73,6 +73,7 @@ if(!isset($_SESSION)) session_start();
         </div>
         <div class="footer">
             <img src="./pics/osu.png" width="100" height="100" style="float: right; margin-right: 50px; margin-top: 10px">
+            <br/><br/><span>Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
 </html>
