@@ -1,5 +1,5 @@
 <?php
-    $this_sites_salt = "ojX&xUV>1,%oA5*;W*cmfeazSZPUnRIsmv}^U%;K5eiPy";
+    //$this_sites_salt = "ojX&xUV>1,%oA5*;W*cmfeazSZPUnRIsmv}^U%;K5eiPy";
     $ini_settings = parse_ini_file('./settings.ini',true);
     
     if(isset($ini_settings['Database'])){
@@ -11,13 +11,6 @@
     }else{
         die("YOU MUST SET YOUR DATABASE SETTINGS IN: ./settings.ini");
     }
-    
-    
-    //$DBAddress = 'localhost';
-    //$DBUsername = 'root';
-    //$DBPassword = 'eglab8888';
-    //$DBName = 'tricombs';
-    //$DB_type = 'mysql';
     
     switch($DB_type){
         case 'mysql':

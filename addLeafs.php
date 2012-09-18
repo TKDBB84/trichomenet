@@ -146,12 +146,10 @@ reset($genotypes);
     </head>
     <body onload="getLeafs(<?php echo $first_key; ?>);">
         <div class="header">
-            <div class="header" id="logo"></div>
-            <div class="header" id="logo_text">
-                <a class="header" href="#"><span>TRICHOME<span>NET</span></span></a>
-                <br/>
-
-            </div>
+            <div id="logo"></div>
+                <div class="header" id="logo_text">
+                    <a class="header" href="./index.php"><span>TRICHOME<span>NET</span></span></a>
+                </div>
 
             <div class="linkblock">
                 <table id="link_table">

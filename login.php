@@ -1,5 +1,17 @@
 <?php
 if(!isset($_SESSION)) session_start();
+include 'chkcookie.php';
+if(isset($_COOKIE['creation'])){
+    include_once 'connection.php';
+    if(validCookie($_COOKIE,$pdo_dbh)){
+        header('Location: ./chkUser.php');
+    }else{
+        $cookie_keys = array_keys($_COOKIE);
+        if(!empty($cookie_keys))
+            foreach($cookie_keys as $keyis)
+                setcookie($keyis,'',time() - 3600);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -64,7 +76,7 @@ if(!isset($_SESSION)) session_start();
                             <input type="checkbox" name="remember">Remember Me<br/>
                         <br/>
                         <button type="submit">Login</button><br/>
-                        <a href="#">Forgot Password?</a>
+                        <a href="forgot.php">Forgot Password?</a>
                         </form>
                         
                     </div>
