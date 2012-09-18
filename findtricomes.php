@@ -106,7 +106,7 @@ $stmt_get_leaf_cords->closeCursor();
     
   
     
-    function draw(){
+    function draw(event){
         var inner = document.getElementById("inner");
         var outter = document.getElementById("outter");
         var tip = document.getElementById("tip");
@@ -128,7 +128,10 @@ $stmt_get_leaf_cords->closeCursor();
         var y;
         var c=document.getElementById("myCanvas");
         var ctx=c.getContext("2d");
-        if (event.pageX || event.pageY) {
+        var rect = c.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
+        /*if (event.pageX || event.pageY) {
             x = event.pageX;
             y = event.pageY;
         }else{ 
@@ -136,7 +139,7 @@ $stmt_get_leaf_cords->closeCursor();
             y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
         } 
         x -= c.offsetLeft;
-        y -= c.offsetTop;
+        y -= c.offsetTop;*/
         
         var removed = -1;
         var len = (sessionStorage.length-1) / 3;
@@ -384,7 +387,7 @@ $stmt_get_leaf_cords->closeCursor();
             </div>
             <div id="main_contents" style="margin-left: 0px;">
                 <div id="framed" style="margin-left: 0px; margin-right: 0px;">
-                    <canvas id="myCanvas" onmousedown="draw();" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style="width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; background:url(<?php echo $filepath; ?>);"></canvas>
+                    <canvas id="myCanvas" onmousedown="draw(event);" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style="width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; background:url(<?php echo $filepath; ?>);"></canvas>
                     <br/>
                     Set Sensitivity:<br/>
                     <input id="rng" type="range" min="0" max="255" value="100" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
