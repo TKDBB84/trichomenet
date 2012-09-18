@@ -77,6 +77,38 @@ reset($genotypes);
         <style type="text/css" media="screen"></style>
         <title>TrichomeNet</title>
         <script type="text/javascript">
+            function setName(val){
+                var parts = val.split("/");
+                if(parts.length == 1){
+                    parts = val.split("\\");
+                }
+                var piece_num = parts.length-1;
+                var name = parts[piece_num];
+                var name_parts = name.split(".");
+                var name_length = name_parts.length - 1;
+                name = '';
+                for(var i = 0 ; i < name_length ; i++){
+                    name += name_parts[i];
+                }
+                var txt = document.getElementById('leafname');
+                if(txt.value === ''){
+                    txt.value = name;
+                }
+                return;
+            }
+            
+            function splitPath(str) {
+                var rawParts = str.split("/"), parts = [];
+                for (var i = 0, len = rawParts.length, part; i < len; ++i) {
+                    part = "";
+                    while (rawParts[i].slice(-1) == "\\") {
+                    part += rawParts[i++].slice(0, -1) + "/";
+                    }
+                parts.push(part + rawParts[i]);
+                }
+                return parts;
+            }
+            
             function getLeafs(id){
                 if(typeof id === 'undefined'){
                     var genoselect = document.getElementById('geno_select');

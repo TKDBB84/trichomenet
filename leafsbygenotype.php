@@ -76,8 +76,8 @@ if(count($result) > 0){
     }
 }
 echo '<tr>',
-            '<td colspan="2">Name: <input type="text" name="new_leaf_name" style="width:80%;"/></td>',
-            '<td colspan="2"><input type="file" name="new_leaf_file" /></td>',
+            '<td colspan="2">Name: <input type="text" id="leafname" name="new_leaf_name" style="width:80%;"/></td>',
+            '<td colspan="2"><input type="file" name="new_leaf_file" onChange="setName(this.value);" /></td>',
             '<td colspan="2"><button type="submit" name="add_new_leaf"',
                 ($user_id == 0)?' onClick="alert(\'Guests Cannot Add Data\');return false;"':'',
             '>Add New</button></td>',
