@@ -162,14 +162,22 @@ reset($genotypes);
 
         <!--<div style="height:100%; width: 100%; position: relative;">-->
         <div class="sidebar">
-            <span>Step 1: Do Stuff</span>
-            <br/><br/>
-            <span>Step 2: Do More Stuff</span>
-            <br/><br/>
-            <span>Step 3: Do Other Stuff</span>
-            <br/><br/>
-            <span>Step 4: Do Last Stuff</span>
-            <br/><br/>
+            <span>Step 1: Define Genotypes</span>
+                <br/><br/>
+                <span>Step 2: Upload Leaf Images</span>
+                <br/><br/>
+                <span>Step 3: Detect Trichomes</span>
+                <br/><br/>
+                <span>Step 4: Conduct Analyses</span>
+                <br/><br/>
+                <span style="position: absolute; bottom: 0; right: 0;">
+                    If you have any problems with the software, 
+                      please leave any issues at: 
+                      <a href="https://github.com/TKDBB84/trichomenet">
+                        TrichomeNet On Github
+                      </a>
+                      <br/><br/>
+                </span>
         </div>
         <div class="contents">
             <div id="contents_header">
@@ -182,6 +190,9 @@ reset($genotypes);
                         </select></b>
             </div>
             <div id="main_contents">
+                <p>
+                    Upload leaf images into their respective categories. You can choose to keep original file names or assign new names to each image. After an image is uploaded, it can be used for trichome detection via the "Detect Trichomes" button.
+                </p>
                 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
                             <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
                     <div id="framed">                    

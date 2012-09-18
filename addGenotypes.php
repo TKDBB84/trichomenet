@@ -73,12 +73,10 @@ if (isset($_POST['genotype_id'])) {
     </head>
     <body>
         <div class="header">
-            <div class="header" id="logo"></div>
-            <div class="header" id="logo_text">
-                <a class="header" href="#"><span>TRICHOME<span>NET</span></span></a>
-                <br/>
-
-            </div>
+            <div id="logo"></div>
+                <div class="header" id="logo_text">
+                    <a class="header" href="./index.php"><span>TRICHOME<span>NET</span></span></a>
+                </div>
 
             <div class="linkblock">
                 <table id="link_table">
@@ -91,20 +89,31 @@ if (isset($_POST['genotype_id'])) {
 
         <!--<div style="height:100%; width: 100%; position: relative;">-->
             <div class="sidebar">
-                <span>Step 1: Do Stuff</span>
+                <span>Step 1: Define Genotypes</span>
                 <br/><br/>
-                <span>Step 2: Do More Stuff</span>
+                <span>Step 2: Upload Leaf Images</span>
                 <br/><br/>
-                <span>Step 3: Do Other Stuff</span>
+                <span>Step 3: Detect Trichomes</span>
                 <br/><br/>
-                <span>Step 4: Do Last Stuff</span>
+                <span>Step 4: Conduct Analyses</span>
                 <br/><br/>
+                <span style="position: absolute; bottom: 0; right: 0;">
+                    If you have any problems with the software, 
+                      please leave any issues at: 
+                      <a href="https://github.com/TKDBB84/trichomenet">
+                        TrichomeNet On Github
+                      </a>
+                      <br/><br/>
+                </span>
             </div>
             <div class="contents">
                 <div id="contents_header">
                     <b>Genotypes</b>
                 </div>
                 <div id="main_contents">
+                    <p>
+                        To get started using TRICHOMENET, you must first define the experimental categories under which you will be saving leaf pictures. These can be different plant genotypes, but can also be used to define other differences such as treatments or plant ages.
+                    </p>
                     <form action="./addGenotypes.php" method="POST">
                         <div id="framed">
                         <div id="genotypes" style="padding-left: 20px;">

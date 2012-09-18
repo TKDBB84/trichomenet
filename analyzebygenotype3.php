@@ -38,15 +38,18 @@ $stmt_get_leafs_by_genotype->closeCursor();
 <table rules="groups">
     <thead>
     <tr>
+        <td></td>
+        <td></td>
         <td><strong>Select Leafs To Include:</strong></td>
         <td></td>
         <td><strong>Selected Leafs:</strong></td>
-        <td></td>
-        <td></td>
         <td>
         </td>
     </tr>
     <tr> 
+        <td></td>
+        <td>
+        </td>
         <td>
             <select name="full_list" id="fl" onChange="getLeafDetails(this);" size="5" multiple="multiple">
             <?php 
@@ -65,9 +68,6 @@ $stmt_get_leafs_by_genotype->closeCursor();
         </td>
         <td>
             
-        </td>
-        <td></td>
-        <td>
         </td>
     </tr>
     </thead>
