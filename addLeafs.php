@@ -10,10 +10,11 @@ $pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;", $DBUsername, $DBPass
 if (isset($_POST) && $user_id != 0) {
     if (isset($_POST['add_new_leaf'])) {
         $ini_settings = parse_ini_file('./settings.ini', true);
-        $uploaddir = $ini_settings['Fiji']['Picture_Path'] . '/';
+        $uploaddir = $ini_settings['Fiji']['Picture_Path'].'/';
         if ($_FILES['new_leaf_file']['type'] == 'image/jpeg') {
             $filename = strtolower(basename($_FILES['new_leaf_file']['name']));
-            $exts = split("[/\\.]", $filename);
+            $exts = explode(".", $filename);
+            //die(var_dump($exts));
             $n = count($exts) - 1;
             $exts = $exts[$n];
             $filename = "img_" . md5(uniqid(rand(), true));
@@ -21,7 +22,6 @@ if (isset($_POST) && $user_id != 0) {
             $full_name = $uploadfile . '.' . $exts;
             if (move_uploaded_file($_FILES['new_leaf_file']['tmp_name'], $full_name)) {
                 chmod($full_name, 0644);
-                echo "File was successfully uploaded<br/>";
                 $dest = $uploadfile . '_thumb.' . $exts;
                 make_thumb($full_name, $dest, 200);
                 chmod($dest, 0644);
