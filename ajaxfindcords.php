@@ -12,8 +12,8 @@ if(isset($ini_settings['Fiji'])){
 
 
 $output_f = 'tmp_'.uniqid();
-$noise = $_GET['noise'];
-$current_leaf = $PIC_PATH.'/'.$_GET['curr_file'].'.jpg';
+$noise = $_POST['noise'];
+$current_leaf = $PIC_PATH.'/'.$_POST['curr_file'].'.jpg';
 $output_file = $Output_Dir.'/'.$output_f.'.csv';
 $string = 'import ij.IJ;ip = IJ.getImage();while(null == ip){ip = IJ.getImage();}IJ.run(ip,"Find Maxima...","noise='.$noise.' output=List");IJ.saveAs("Results","'.$output_file.'");';
 exec("echo '".$string."' > $FIJI_MACRO_PATH");

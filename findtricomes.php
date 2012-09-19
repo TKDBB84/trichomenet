@@ -86,8 +86,15 @@ $stmt_get_leaf_cords->closeCursor();
             context.clearRect(0, 0, canvas.width, canvas.height);
             sessionStorage.clear();
             sessionStorage.setItem('option','outter');
-            $.get("ajaxfindcords.php", { noise: noise, curr_file: "<?php echo $file_name; ?>" } ,
-                function(responseText){
+            var xmlhttp;
+            if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+                xmlhttp=new XMLHttpRequest();
+            }else{// code for IE6, IE5
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange=function(){
+                if (xmlhttp.readyState==4 && xmlhttp.status==200){
+                    alert(xmlhttp.responseText);
                     loading(false);
                     var points_returned=responseText;
                     var e = document.getElementById('shapes');
@@ -98,7 +105,13 @@ $stmt_get_leaf_cords->closeCursor();
                     }
                     document.getElementById('tip').disabled = false;
                 }
-            );
+            }
+        var noise = encodeURIComponent(noise);
+        var curr_file=encodeURIComponent("<?php echo $file_name; ?>");
+        var parameters="noise="+noise+"&curr_file="+curr_file;
+        xmlhttp.open("POST", "ajaxfindcords.php", true);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(parameters);
         }
     }
     
@@ -403,7 +416,6 @@ $stmt_get_leaf_cords->closeCursor();
                     <input type="checkbox" id='del' onclick='unSelectRadio();'/>Delete<br/>
                     <button onclick="clearmything(false);">Clear</button>
                     <button onclick="saveIt();">Save</button>
-                    <button onclick="loading();">switch</button>
                     <div id="csv"></div>
                 </div>
             </div>
