@@ -45,17 +45,6 @@ $stmt_get_leaf_cords->closeCursor();
         <title>TrichomeNet</title>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"> </script> 
 <script type="text/javascript">
-    
-    $("body").on({
-    // When ajaxStart is fired, add 'loading' to body class
-    ajaxStart: function() { 
-        $(this).addClass("loading"); 
-    },
-    // When ajaxStop is fired, rmeove 'loading' from body class
-    ajaxStop: function() { 
-        $(this).removeClass("loading"); 
-    }    
-    });
 
     function loadPage(){
         sessionStorage.clear();
@@ -70,12 +59,26 @@ $stmt_get_leaf_cords->closeCursor();
         ?>
     }
     
+    function loading(swt){
+        var canvas = document.getElementById("myCanvas");
+        if(swt){
+            canvas.height = 500;
+            canvas.width = 500;
+            canvas.style.backgroundImage="url('./pics/analyzing.gif')";
+        }else{
+            canvas.height = <?php echo $height; ?>;
+            canvas.width = <?php echo $width; ?>;
+            canvas.style.backgroundImage="url('<?php echo $filepath; ?>')";
+        }
+    }
+    
     function getAutoCords(noise){
         var confm = false;
         if(sessionStorage.length > 1)
             confm = confirm("This Will Clear All Points,\nDo You Want To Contiune?");
         else confm = true;
         if(confm){
+            loading(true);
             noise = (noise * -1) + 255;
             if(noise == 0) noise = 1;
             var canvas = document.getElementById("myCanvas");
@@ -85,6 +88,7 @@ $stmt_get_leaf_cords->closeCursor();
             sessionStorage.setItem('option','outter');
             $.get("ajaxfindcords.php", { noise: noise, curr_file: "<?php echo $file_name; ?>" } ,
                 function(responseText){
+                    loading(false);
                     var points_returned=responseText;
                     var e = document.getElementById('shapes');
                     var found_points = jQuery.parseJSON(points_returned);
@@ -131,15 +135,6 @@ $stmt_get_leaf_cords->closeCursor();
         var rect = c.getBoundingClientRect();
         var x = event.clientX - rect.left;
         var y = event.clientY - rect.top;
-        /*if (event.pageX || event.pageY) {
-            x = event.pageX;
-            y = event.pageY;
-        }else{ 
-            x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
-            y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
-        } 
-        x -= c.offsetLeft;
-        y -= c.offsetTop;*/
         
         var removed = -1;
         var len = (sessionStorage.length-1) / 3;
@@ -395,7 +390,7 @@ $stmt_get_leaf_cords->closeCursor();
             </div>
             <div id="main_contents" style="margin-left: 0px;">
                 <div id="framed" style="margin-left: 0px; margin-right: 0px;">
-                    <canvas id="myCanvas" onmousedown="draw(event);" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style="width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; background:url(<?php echo $filepath; ?>);"></canvas>
+                    <canvas id="myCanvas" onmousedown="draw(event);" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style=" background:url(<?php echo $filepath; ?>);"></canvas>
                     <br/>
                     Set Sensitivity:<br/>
                     <input id="rng" type="range" min="0" max="255" value="100" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
@@ -408,6 +403,7 @@ $stmt_get_leaf_cords->closeCursor();
                     <input type="checkbox" id='del' onclick='unSelectRadio();'/>Delete<br/>
                     <button onclick="clearmything(false);">Clear</button>
                     <button onclick="saveIt();">Save</button>
+                    <button onclick="loading();">switch</button>
                     <div id="csv"></div>
                 </div>
             </div>
@@ -418,5 +414,4 @@ $stmt_get_leaf_cords->closeCursor();
             <br/><br/><span>Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
-    <div class="modal">
 </html>        

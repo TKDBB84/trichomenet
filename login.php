@@ -65,7 +65,7 @@ if(isset($_COOKIE['creation'])){
                         Don't Have An Account? <a href="./register.php">Register For Free</a><br/>
                         <br/>
                         <div style="float: right; margin-right: 50px;">
-                            <strong>Just Looking Around?</strong><br/>Login As A Guest Using:<br/>&nbsp;&nbsp;&nbsp;&nbsp; Username: guest<br/>&nbsp;&nbsp;&nbsp;&nbsp; Password: guest<br/>
+                            <strong>Just Looking Around?</strong><br/>Login As A Guest Using:<br/>&nbsp;&nbsp;&nbsp;&nbsp; Login: guest<br/>&nbsp;&nbsp;&nbsp;&nbsp; Password: guest<br/>
                             This Will Let You View Our Sample Data
                         </div>
                         <form method="post" action="chkUser.php">
