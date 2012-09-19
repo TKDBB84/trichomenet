@@ -1,9 +1,20 @@
 <?php
-if(!isset($_SESSION)) session_start();
+if (!isset($_SESSION))    session_start();
 include_once 'connection.php';
-$pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;",$DBUsername,$DBPassword);
+include_once 'chkcookie.php';
+if(isset($_SESSION['user_id'])){
+    $user_id = $_SESSION['user_id'];
+}else if(validCookie($_COOKIE, $pdo_dbh)){
+    doLogin($_COOKIE,$pdo_dbh);
+    $user_id = $_SESSION['user_id'];
+}else{
+    $_SESSION['error'] = true;
+    $_SESSION['error_text'] = '<br/>You Do Not Appear To Be Logged In<br/>
+                               Or Your Sessison Has Expired';
+    header('Location: ./login.php');
+    die();
+}
 
-$user_id = $_SESSION['user_id'];
 if(isset($curr_genotype)) unset($curr_genotype);
 if(isset($_SESSION['current_genotype'])){
     $curr_genotype = $_SESSION['current_genotype'];
@@ -172,10 +183,24 @@ reset($genotypes);
             select_box.options[i].selected = false;
         return true;
     }
-  
+    
+    function overlay(){
+        var e = document.getElementById("overlay");
+        if(e.style.visibility == "visible"){
+            e.style.visibility = "hidden";
+            document.body.style.overflow = 'auto';
+        }else{
+            e.style.visibility = "visible";
+            document.body.style.overflow = 'hidden';
+        }
+    }
 </script>
 </head>
-<body onload="getGenotype(<?php echo isset($curr_genotype)?$curr_genotype:$first_key; ?>);">
+<body onload="<?php if($genotypes[0] === "No Genotypes")
+                            echo 'overlay();';
+                        else
+                            echo 'getGenotype(',isset($curr_genotype)?$curr_genotype:$first_key,');';
+                    ?>">
         <div class="header">
             <div id="logo"></div>
                 <div class="header" id="logo_text">
@@ -235,4 +260,12 @@ reset($genotypes);
             <br/><br/><span>Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
+    <div id="overlay">
+        <div>
+           <p><b>It Appears You Have No Genotypes<b/><br/><br/>
+           You Must Add The Genotypes You Are Working With
+           Before You Can Use Any Other Pages!</p>
+           <button type="button" onClick="overlay();window.location = './addGenotypes.php';">Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick='overlay();'>Ignore</button>
+         </div>
+    </div>
 </html>

@@ -1,9 +1,22 @@
 <?php
 if (!isset($_SESSION))    session_start();
 include_once 'connection.php';
-$pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;", $DBUsername, $DBPassword);
+include_once 'chkcookie.php';
+if(isset($_SESSION['user_id'])){
+    $user_id = $_SESSION['user_id'];
+}else if(validCookie($_COOKIE, $pdo_dbh)){
+    doLogin($_COOKIE,$pdo_dbh);
+    $user_id = $_SESSION['user_id'];
+}else{
+    $_SESSION['error'] = true;
+    $_SESSION['error_text'] = '<br/>You Do Not Appear To Be Logged In<br/>
+                               Or Your Sessison Has Expired';
+    header('Location: ./login.php');
+    die();
+}
 
-$user_id = $_SESSION['user_id'];
+
+
 
 if (isset($_POST) && $user_id != 0) {
     if (isset($_POST['new_geno'])) {
@@ -69,6 +82,17 @@ if (isset($_POST['genotype_id'])) {
                     xmlhttp.send();
                 }
             }
+            
+            function overlay(){
+                var e = document.getElementById("overlay");
+                if(e.style.visibility == "visible"){
+                    e.style.visibility = "hidden";
+                    document.body.style.overflow = 'auto';
+                }else{
+                    e.style.visibility = "visible";
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         </script>
     </head>
     <body>
@@ -111,6 +135,7 @@ if (isset($_POST['genotype_id'])) {
                     <b>Genotypes</b>
                 </div>
                 <div id="main_contents">
+                    <input type='button' value='show modal dialog' onclick='overlay()' />
                     <p>
                         To get started using TRICHOMENET, you must first define the experimental categories under which you will be saving leaf pictures. These can be different plant genotypes, but can also be used to define other differences such as treatments or plant ages.
                     </p>
@@ -158,4 +183,12 @@ if (isset($_POST['genotype_id'])) {
             <br/><br/><span>Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
+   
+<div id="overlay">
+     <div>
+           <p><b>It Appears You Have No Genotypes<b/><br/><br/>
+           You Must Add The Genotypes You Are Working With
+           Before You Can Use Any Other Pages!</p>
+           <button type="button">Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick='overlay()'>Ignore</button>
+     </div></div>
 </html>

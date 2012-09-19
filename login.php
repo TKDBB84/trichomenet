@@ -1,9 +1,13 @@
 <?php
 if(!isset($_SESSION)) session_start();
-include 'chkcookie.php';
-if(isset($_COOKIE['creation'])){
-    include_once 'connection.php';
+include_once 'chkcookie.php';
+include_once 'connection.php';
+
+if(isset($_SESSION['user_id'])){
+    header('Location: ./addGenotypes.php');
+}else if(isset($_COOKIE['creation'])){
     if(validCookie($_COOKIE,$pdo_dbh)){
+        $_SESSION['user_id'] = $_COOKIE['user_id'];
         header('Location: ./chkUser.php');
     }else{
         $cookie_keys = array_keys($_COOKIE);

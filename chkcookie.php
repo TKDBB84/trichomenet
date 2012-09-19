@@ -24,4 +24,17 @@ function validCookie($cookie,$pdo_dbh){
     }
     return $ret;
 }
+
+function doLogin($cookie,$pdo_dbh){
+    $_SESSION['user_id'] = $cookie['user_id'];
+    $user_id = $_COOKIE['user_id'];
+    $new_crypt = uniqid('',true);
+    $stmt_update_crypt = $pdo_dbh->prepare("UPDATE `users` SET `last_crypt` = :new_crypt WHERE `user_id`= :user_id");
+    $stmt_update_crypt->bindValue(":new_crypt", $new_crypt, PDO::PARAM_STR);
+    $stmt_update_crypt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt_update_crypt->execute();
+    if(isset($_COOKIE['creation'])){
+        setcookie("last_crypt",$new_crypt,$cookie['creation']);
+    }
+}
 ?>
