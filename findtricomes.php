@@ -405,8 +405,8 @@ $stmt_get_leaf_cords->closeCursor();
                     <canvas id="myCanvas" onmousedown="draw(event);" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style=" background:url(<?php echo $filepath; ?>);"></canvas>
                     <br/>
                     Set Sensitivity:<br/>
-                    <input id="rng" type="range" min="0" max="255" value="100" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
-                    <input  id="txt" type="text" value="100" size="3" readonly/>
+                    <input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
+                    <input  id="txt" type="text" value="150" size="3" readonly/>
                     <button onClick="getAutoCords(document.getElementById('txt').value)">Find Tricomes</button>
                     <br/>
                     <input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/>Mark Leaf Tip<br/>
