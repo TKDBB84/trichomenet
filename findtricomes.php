@@ -94,9 +94,8 @@ $stmt_get_leaf_cords->closeCursor();
             }
             xmlhttp.onreadystatechange=function(){
                 if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                    alert(xmlhttp.responseText);
                     loading(false);
-                    var points_returned=responseText;
+                    var points_returned=xmlhttp.responseText;
                     var e = document.getElementById('shapes');
                     var found_points = jQuery.parseJSON(points_returned);
                     for(i=0; i<found_points.length; i++) {
