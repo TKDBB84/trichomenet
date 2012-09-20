@@ -84,6 +84,26 @@ $stmt_get_leaf_cords->closeCursor();
             var canvas = document.getElementById("myCanvas");
             var context = canvas.getContext("2d");
             context.clearRect(0, 0, canvas.width, canvas.height);
+            var outter_x = new Array();
+            var outter_y = new Array();
+            var tip_x = -1;
+            var tip_y = -1;
+            var len = (sessionStorage.length-1) / 3;
+            for(var i=0;i<len;i++){
+                var namX = 'X'+i.toString();
+                var namY = 'Y'+i.toString();
+                var typeName = 'type'+i.toString();
+                var xCord = sessionStorage.getItem(namX);
+                var yCord = sessionStorage.getItem(namY);
+                var typeName = sessionStorage.getItem(typeName);
+                if(typeName == 'outter'){
+                    outter_x.push(xCord);
+                    outter_y.push(yCord);
+                }else if(typeName == 'tip'){
+                    tip_x = xCord;
+                    tip_y = yCord;
+                }
+            }
             sessionStorage.clear();
             sessionStorage.setItem('option','outter');
             var xmlhttp;
@@ -98,9 +118,23 @@ $stmt_get_leaf_cords->closeCursor();
                     var points_returned=xmlhttp.responseText;
                     var e = document.getElementById('shapes');
                     var found_points = jQuery.parseJSON(points_returned);
+                    if(tip_x != -1 && tip_y != -1){
+                        addPoint(tip_x,tip_y,'tip');
+                    }
+                    for(j=0; j<outter_x.length;j++){
+                        addPoint(outter_x[j],outter_y[j],'outter');
+                    }
                     for(i=0; i<found_points.length; i++) {
                         var point = found_points[i];
-                        addPoint(point.x,point.y,'auto');
+                        var addpoint = true;
+                        
+                        for(j=0; j<outter_x.length && addpoint;j++){
+                            if( getDistance(point.x,point.y,outter_x[j],outter_y[j]) <= 10 ){
+                                addpoint = false;
+                            }
+                        }
+                        if(addpoint)
+                            addPoint(point.x,point.y,'auto');
                     }
                     document.getElementById('tip').disabled = false;
                 }
@@ -113,7 +147,17 @@ $stmt_get_leaf_cords->closeCursor();
         xmlhttp.send(parameters);
         }
     }
-    
+      
+    function getDistance(x1,y1,x2,y2){
+        var xs = 0;
+        var ys = 0;
+        xs = x2 - x1;
+        xs = xs * xs;
+        ys = y2 - y1;
+        ys = ys * ys;
+       return Math.sqrt( xs + ys );
+    }
+      
     function printValue(sliderID, textbox) {
             var x = document.getElementById(textbox);
             var y = document.getElementById(sliderID);
@@ -334,6 +378,7 @@ $stmt_get_leaf_cords->closeCursor();
             ctx.strokeStyle = '#f00';
         }else if( type === 'auto'){
             ctx.strokeStyle = '#0ff';
+            type = 'inner';
         }else if( type === 'tip'){
             ctx.strokeStyle = '#0f0';
             document.getElementById('tip').disabled = true;
@@ -422,7 +467,7 @@ $stmt_get_leaf_cords->closeCursor();
         </div>
         <div class="footer">
             <img src="./pics/osu.png" width="100" height="100" style="float: right; margin-right: 50px; margin-top: 10px">
-            <br/><br/><span>Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a></span>
+            <br/><br/><span>Email Us At: <a href="mailto:admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
 </html>        
