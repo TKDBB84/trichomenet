@@ -15,7 +15,18 @@ if(isset($_SESSION['user_id'])){
     die();
 }
 
-
+$active_geno = -1;
+if(!isset($_SESSION['active_geno'])){
+    $stmt_get_last_genotype = $pdo_dbh->prepare('SELECT last_active_genotype FROM `users` WHERE `user_id` = :user_id');
+    $stmt_get_last_genotype->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+    $stmt_get_last_genotype->execute();
+    $result = $stmt_get_last_genotype->fetch(PDO::FETCH_ASSOC);
+    if($result['last_active_genotype'] != null)
+        $active_geno = $result['last_active_genotype'];
+    $_SESSION['active_geno'] = $active_geno;
+}else{
+    $active_geno = $_SESSION['active_geno'];
+}
 
 
 if (isset($_POST) && $user_id != 0) {
@@ -42,13 +53,6 @@ if (count($results) > 0) {
     $genotypes[0] = "No Genotypes";
 }
 
-if (isset($_POST['genotype_id'])) {
-    $first_key = $_POST['genotype_id'];
-} else {
-    reset($genotypes);
-    $first_key = key($genotypes);
-    reset($genotypes);
-}
 ?>
 <!DOCTYPE html>
 <html>
@@ -58,6 +62,13 @@ if (isset($_POST['genotype_id'])) {
         <style type="text/css" media="screen"></style>
         <title>TrichomeNet</title>
         <script type="text/javascript">
+            <?php if(isset($active_geno) && $active_geno !== -1){
+                echo 'document.addEventListener("DOMContentLoaded", function()
+                        {
+                            activateGenotype(',$active_geno,');
+                        }, false);';
+                  } ?>
+            
             function delGenoType(geno_id){
                 var conf = confirm('This Will Also Delete\nAll Leaves And Trichomes\nIn This Genotype\nDo You Wish To Proceed?');
                 if(conf){
@@ -92,6 +103,61 @@ if (isset($_POST['genotype_id'])) {
                     e.style.visibility = "visible";
                     document.body.style.overflow = 'hidden';
                 }
+            }
+            
+            function activateGenotype(genotype){
+                var all_buttons = document.getElementsByClassName('activate');
+                for (var i = all_buttons.length - 1; i >= 0; i--){
+                    all_buttons[i].disabled = true;
+                }
+                var xmlhttp;
+                if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+                    xmlhttp=new XMLHttpRequest();
+                }else{// code for IE6, IE5
+                    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                xmlhttp.onreadystatechange=function(){
+                    if (xmlhttp.readyState==4 && xmlhttp.status==200){
+                        if(xmlhttp.responseText === '1'){
+                            move_row(genotype);
+                        }else{
+                            alert('An Error Occured,<br/>has your session timed-out?');
+                        }
+                        for (var i = all_buttons.length - 1; i >= 0; i--){
+                            all_buttons[i].disabled = false;
+                        }
+                    }
+                }
+                var sendstr = "?genotype_id="+genotype;
+                xmlhttp.open("GET","./activateGenotype.php"+sendstr,true);
+                xmlhttp.send();
+            }
+            
+            //move a row up and down a table
+            //available dir option: 'up', 'down'
+            //row_num_column is the column of the row number, starts with 1
+            function move_row(row_id) {
+                var new_head = document.getElementById(row_id);
+                var old_head = document.getElementById('geno_table').rows[1];
+                
+                var tmp_id = old_head.id;
+                old_head.id = new_head.id;
+                new_head.id = tmp_id;
+                
+                var old_cells = old_head.getElementsByTagName("td");
+                old_cells[0].style.fontWeight="normal";
+                old_cells[1].style.fontWeight="normal";
+                old_cells[0].innerHTML = '<button type="button" class="activate" onClick="activateGenotype('+tmp_id+');">Activate</button>';
+                
+                var new_cells = new_head.getElementsByTagName("td");
+                new_cells[0].style.fontWeight="bold";
+                new_cells[1].style.fontWeight="bold";
+                new_cells[0].innerHTML = 'ACTIVE';
+                
+                var tmp = old_head.innerHTML;
+                old_head.innerHTML = new_head.innerHTML;
+                new_head.innerHTML = tmp;
+                
             }
         </script>
     </head>
@@ -140,37 +206,43 @@ if (isset($_POST['genotype_id'])) {
                     </p>
                     <form action="./addGenotypes.php" method="POST">
                         <div id="framed">
-                        <div id="genotypes" style="padding-left: 20px;">
-                            <table border="1">
-                                <tr>
-                                    <th>Genotype</th>
-                                    <th/>
-                                </tr>
-                                <?php
-                                if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
-                                    //no genotypes
-                                } else {
-                                    foreach ($genotypes as $id => $genotype)
-                                        echo '<tr id="', $id, '">',
-                                        '<td>', $genotype, '</td>',
-                                        '<td><button type="button" value="', $id,
-                                        '" onClick=',
-                                        ($user_id == 0) ?
-                                                '"alert(\'Guests Cannot Delete\');"' :
-                                                '"delGenoType(', $id, ');"',
-                                        '>Delete</button>', '</td>',
-                                        '</tr>';
-                                }
-                                ?>
-                                <tr>
-                                    <td><input type="text" name="new_genotype"/></td>
-                                    <td><button type="Submit" name="new_geno"<?php
-                                if ($user_id == 0)
-                                    echo ' onClick="alert(\'Guests Cannot Add Data\');return false;"';
-                                ?>>Add</button></td>
-                                </tr>
-                            </table>
-                        </div>
+                            <div style="float: right; margin-right: 50px;">
+                                <p>
+                                    Setting a Genotype as active will propogate that genotype throughout TrichomeNet,<br/>you can change the current genotype from here at anytime
+                                </p>
+                            </div>
+                            <div id="genotypes" style="padding-left: 20px;">
+                                <table id="geno_table" border="1">
+                                    <tr>
+                                        <th colspan="3">Genotype</th>
+                                    </tr>
+                                    <?php
+                                    if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
+                                        //no genotypes
+                                    } else {
+                                        foreach ($genotypes as $id => $genotype)
+                                            echo '<tr id="', $id, '">',
+                                            '<td>','<button type="button" class="activate" onClick="activateGenotype(',$id,');">Activate</button>','</td>',
+                                            '<td>', $genotype, '</td>',
+                                            '<td><button type="button" value="', $id,
+                                            '" onClick=',
+                                            ($user_id == 0) ?
+                                                    '"alert(\'Guests Cannot Delete\');"' :
+                                                    '"delGenoType(', $id, ');"',
+                                            '>Delete</button>', '</td>',
+                                            '</tr>';
+                                    }
+                                    ?>
+                                    <tr>
+                                        <td colspan="2"><input type="text" name="new_genotype"/></td>
+                                        <td><button type="Submit" name="new_geno"<?php
+                                    if ($user_id == 0)
+                                        echo ' onClick="alert(\'Guests Cannot Add Data\');return false;"';
+                                    ?>>Add</button></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        
                         </div>
                     </form>
                 </div>

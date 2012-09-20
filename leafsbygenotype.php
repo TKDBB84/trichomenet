@@ -16,8 +16,6 @@ if(count($result) > 0)
 else
     $genotype_name = "Currently There Are No Genotypes";
 
-echo '<header><b>',$genotype_name,'</b></header>';
-
 $stmt_get_leafs_by_genotype = $pdo_dbh->prepare('SELECT leaf_id,leaf_name,file_name FROM leafs WHERE fk_genotype_id = :genotype AND owner_id = :user_id');
 $stmt_get_leafs_by_genotype->bindValue(':genotype', $genotype,PDO::PARAM_INT);
 $stmt_get_leafs_by_genotype->bindValue(':user_id', $user_id,PDO::PARAM_INT);
