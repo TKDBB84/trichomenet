@@ -135,7 +135,6 @@ if (isset($_POST['genotype_id'])) {
                     <b>Genotypes</b>
                 </div>
                 <div id="main_contents">
-                    <input type='button' value='show modal dialog' onclick='overlay()' />
                     <p>
                         To get started using TRICHOMENET, you must first define the experimental categories under which you will be saving leaf pictures. These can be different plant genotypes, but can also be used to define other differences such as treatments or plant ages.
                     </p>
