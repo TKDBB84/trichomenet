@@ -56,10 +56,7 @@ if ($active_geno !== -1) {
 
     $stmt_get_cord_count_by_leafid->bindParam(':leaf_id', $leaf_id, PDO::PARAM_INT);
     $all_leafs = array();
-    $first_key = null;
     while ($row = $stmt_get_leafs_by_genotype->fetch(PDO::FETCH_ASSOC)) {
-        if (is_null($first_key))
-            $first_key = $row['leaf_id'];
         $leaf_id = $row['leaf_id'];
         $stmt_get_cord_count_by_leafid->execute();
         $row2 = $stmt_get_cord_count_by_leafid->fetch(PDO::FETCH_ASSOC);
@@ -72,6 +69,13 @@ if ($active_geno !== -1) {
     unset($leaf_id);
     $stmt_get_leafs_by_genotype->closeCursor();
 }
+
+$has_leafs = (count($all_leafs) !== 0);
+$stmt_count_trichomes = $pdo_dbh->prepare("SELECT xCord FROM `cords` JOIN `leafs` ON fk_leaf_id = leaf_id WHERE owner_id = :user_id LIMIT 1");
+$stmt_count_trichomes->bindValue(':user_id',$user_id,PDO::PARAM_INT);
+$stmt_count_trichomes->execute();
+$result2 = $stmt_count_trichomes->fetch(PDO::FETCH_ASSOC);
+$has_cords = ($result2['xCord'] === NULL);
 ?>
 <!DOCTYPE html>
 <html>
@@ -81,145 +85,172 @@ if ($active_geno !== -1) {
         <style type="text/css" media="screen"></style>
         <title>TrichomeNet</title>
         <script type="text/javascript">
-<?php
-if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
-    echo 'document.addEventListener("DOMContentLoaded", function()
-                                    {',
-    'overlay("no_genotypes");',
-    '}, false);';
-} elseif ($active_geno === -1) {
-    echo 'document.addEventListener("DOMContentLoaded", function()
-                                    {',
-    'overlay("no_active_type");',
-    '}, false);';
-} elseif (isset($_SESSION['all_ids'])) {
-    foreach ($_SESSION['all_ids'] as $leaf_id)
-        echo 'moveLeaf("', $leaf_id, '");';
-    unset($_SESSION['all_ids']);
-}
-?>
-    
-                              function getLeafDetails(list){
-                                  var selected = new Array();
-                                  for (var i = 0; i < list.options.length; i++)
-                                      if (list.options[ i ].selected)
-                                          selected.push(list.options[ i ].value);
-                                  if(selected.length == 0) return;
-                                  if(selected.length == 1)
-                                      leaf_id_list = selected[0];
-                                  else
-                                      leaf_id_list = selected.join();
-                                  var xmlhttp;
-                                  if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                                      xmlhttp=new XMLHttpRequest();
-                                  }else{// code for IE6, IE5
-                                      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                                  }
-                                  xmlhttp.onreadystatechange=function(){
-                                      if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                                          document.getElementById('details').innerHTML=xmlhttp.responseText;
-                                      }
-                                  }
-                                  var sendstr = "?leaf_id="+leaf_id_list;
-                                  xmlhttp.open("GET","leafDetails.php"+sendstr,true);
-                                  xmlhttp.send();
-                              }
-    
-                              function moveLeaf(leaf_id){
-                                  if( leaf_id === -1 || leaf_id === "-1") return false;
-                                  var remove_from = document.getElementById('fl');  
-                                  var i;
-                                  var newOptions = new Array();
-                                  //var elOptNew = document.createElement('option');
-                                  for (i = remove_from.length - 1; i>=0; i--) {
-                                      if (remove_from.options[i].selected || remove_from.options[i].value == leaf_id) {
-                                          newOptions.push(document.createElement('option'));
-                                          var arr_index = newOptions.length - 1;
-                                          newOptions[arr_index].text = remove_from.options[i].text;
-                                          newOptions[arr_index].value = remove_from.options[i].value;
-                                          remove_from.remove(i);
-                                      }
-                                  }
-                                  var add_to = document.getElementById('selected');
-                                  for(var i = 0 ; i < newOptions.length ; i++){
-                                      try{
-                                          add_to.add(newOptions[i], null); 
-                                      }catch(ex){
-                                          add_to.add(newOptions[i]);
-                                      }
-                                  }
-                                  sortSelect(add_to);
-                                  return false;
-                              }
-    
-                              function moveBack(){
-                                  var remove_from = document.getElementById('selected');  
-                                  var i;
-                                  var newOptions = new Array();
-                                  //var elOptNew = document.createElement('option');
-                                  for (i = remove_from.length - 1; i>=0; i--) {
-                                      if (remove_from.options[i].selected) {
-                                          newOptions.push(document.createElement('option'));
-                                          var arr_index = newOptions.length - 1;
-                                          newOptions[arr_index].text = remove_from.options[i].text;
-                                          newOptions[arr_index].value = remove_from.options[i].value;
-                                          remove_from.remove(i);
-                                      }
-                                  }
-                                  var add_to = document.getElementById('fl');
-                                  for(var i = 0 ; i < newOptions.length ; i++){
-                                      try{
-                                          add_to.add(newOptions[i], null); 
-                                      }catch(ex){
-                                          add_to.add(newOptions[i]);
-                                      }
-                                  }
-                                  sortSelect(add_to);
-                                  return false;
-                              }
-    
-                              function sortSelect(selElem) {
-                                  var tmpAry = new Array();
-                                  for (var i=0;i<selElem.options.length;i++) {
-                                      tmpAry[i] = new Array();
-                                      tmpAry[i][0] = selElem.options[i].text;
-                                      tmpAry[i][1] = selElem.options[i].value;
-                                  }
-                                  tmpAry.sort();
-                                  while (selElem.options.length > 0) {
-                                      selElem.options[0] = null;
-                                  }
-                                  for (var i=0;i<tmpAry.length;i++) {
-                                      var op = new Option(tmpAry[i][0], tmpAry[i][1]);
-                                      selElem.options[i] = op;
-                                  }
-                                  return;
-                              }
-    
-                              function loop_select() {
-                                  var select_box = document.getElementById('selected');
-                                  if(select_box.options.length < 2){
-                                      alert('You Must Select At Least 2 Leaves');
-                                      return false;
-                                  }
-                                  for(i=0;i<=select_box.options.length-1;i++)
-                                      select_box.options[i].selected = true;
-                                  var select_box = document.getElementById('fl');
-                                  for(i=0;i<=select_box.options.length-1;i++)
-                                      select_box.options[i].selected = false;
-                                  return true;
-                              }
-    
-                              function overlay(){
-                                  var e = document.getElementById("overlay");
-                                  if(e.style.visibility == "visible"){
-                                      e.style.visibility = "hidden";
-                                      document.body.style.overflow = 'auto';
-                                  }else{
-                                      e.style.visibility = "visible";
-                                      document.body.style.overflow = 'hidden';
-                                  }
-                              }
+            document.addEventListener("DOMContentLoaded", function(){
+            <?php
+            if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
+                echo 'overlay("no_genotypes");';
+            } elseif ($active_geno === -1) {
+                'overlay("no_active_type");';
+            } elseif (isset($_SESSION['all_ids'])) {
+                foreach ($_SESSION['all_ids'] as $leaf_id)
+                    echo 'moveLeaf("', $leaf_id, '");';
+                unset($_SESSION['all_ids']);
+            }elseif((isset($has_leafs) && $has_leafs === false)){
+               echo 'overlay("no_leafs");';
+            }elseif(isset($has_cords) && $has_cords === false){
+               echo 'overlay("no_points");';
+            }
+            ?>
+            }, false);
+          function getLeafDetails(list){
+              var selected = new Array();
+              for (var i = 0; i < list.options.length; i++)
+                  if (list.options[ i ].selected)
+                      selected.push(list.options[ i ].value);
+              if(selected.length == 0) return;
+              if(selected.length == 1)
+                  leaf_id_list = selected[0];
+              else
+                  leaf_id_list = selected.join();
+              var xmlhttp;
+              if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+                  xmlhttp=new XMLHttpRequest();
+              }else{// code for IE6, IE5
+                  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+              }
+              xmlhttp.onreadystatechange=function(){
+                  if (xmlhttp.readyState==4 && xmlhttp.status==200){
+                      document.getElementById('details').innerHTML=xmlhttp.responseText;
+                  }
+              }
+              var sendstr = "?leaf_id="+leaf_id_list;
+              xmlhttp.open("GET","leafDetails.php"+sendstr,true);
+              xmlhttp.send();
+          }
+
+          function moveLeaf(leaf_id){
+              if( leaf_id === -1 || leaf_id === "-1") return false;
+              var remove_from = document.getElementById('fl');  
+              var i;
+              var newOptions = new Array();
+              //var elOptNew = document.createElement('option');
+              for (i = remove_from.length - 1; i>=0; i--) {
+                  if (remove_from.options[i].selected || remove_from.options[i].value == leaf_id) {
+                      newOptions.push(document.createElement('option'));
+                      var arr_index = newOptions.length - 1;
+                      newOptions[arr_index].text = remove_from.options[i].text;
+                      newOptions[arr_index].value = remove_from.options[i].value;
+                      remove_from.remove(i);
+                  }
+              }
+              var add_to = document.getElementById('selected');
+              for(var i = 0 ; i < newOptions.length ; i++){
+                  try{
+                      add_to.add(newOptions[i], null); 
+                  }catch(ex){
+                      add_to.add(newOptions[i]);
+                  }
+              }
+              sortSelect(add_to);
+              return false;
+          }
+
+          function moveBack(){
+              var remove_from = document.getElementById('selected');  
+              var i;
+              var newOptions = new Array();
+              //var elOptNew = document.createElement('option');
+              for (i = remove_from.length - 1; i>=0; i--) {
+                  if (remove_from.options[i].selected) {
+                      newOptions.push(document.createElement('option'));
+                      var arr_index = newOptions.length - 1;
+                      newOptions[arr_index].text = remove_from.options[i].text;
+                      newOptions[arr_index].value = remove_from.options[i].value;
+                      remove_from.remove(i);
+                  }
+              }
+              var add_to = document.getElementById('fl');
+              for(var i = 0 ; i < newOptions.length ; i++){
+                  try{
+                      add_to.add(newOptions[i], null); 
+                  }catch(ex){
+                      add_to.add(newOptions[i]);
+                  }
+              }
+              sortSelect(add_to);
+              return false;
+          }
+
+          function sortSelect(selElem) {
+              var tmpAry = new Array();
+              for (var i=0;i<selElem.options.length;i++) {
+                  tmpAry[i] = new Array();
+                  tmpAry[i][0] = selElem.options[i].text;
+                  tmpAry[i][1] = selElem.options[i].value;
+              }
+              tmpAry.sort();
+              while (selElem.options.length > 0) {
+                  selElem.options[0] = null;
+              }
+              for (var i=0;i<tmpAry.length;i++) {
+                  var op = new Option(tmpAry[i][0], tmpAry[i][1]);
+                  selElem.options[i] = op;
+              }
+              return;
+          }
+
+          function loop_select() {
+              var select_box = document.getElementById('selected');
+              if(select_box.options.length < 2){
+                  alert('You Must Select At Least 2 Leaves');
+                  return false;
+              }
+              for(i=0;i<=select_box.options.length-1;i++)
+                  select_box.options[i].selected = true;
+              var select_box = document.getElementById('fl');
+              for(i=0;i<=select_box.options.length-1;i++)
+                  select_box.options[i].selected = false;
+              return true;
+          }
+
+          function overlay(arg){
+                var e = document.getElementById("overlay");
+                if(e.style.visibility == "visible"){
+                    e.style.visibility = "hidden";
+                    document.body.style.overflow = 'auto';
+                }else{
+                    switch(arg){
+                        case "no_genotypes":
+                            e.innerHTML = '<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+
+                                          'You Must Add The Genotypes You Are Working With'+
+                                          'Before You Can Use Any Other Pages!</p>'+
+                                          '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
+                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                            break;
+                        case "no_active_type":
+                            e.innerHTML = '<div><p><b>It Appears You Have Not Activated A Genotype<b/><br/><br/>'+
+                                          'You Must Activate A Genotype To Working With'+
+                                          'Before You Can Use Any Other Pages!</p>'+
+                                          '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
+                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                            break;
+                        case "no_leafs":
+                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Leaves To This Genotype<b/><br/><br/>'+
+                                          'You Cannot Analyze Leaves Without First Adding Them</p>'+
+                                          '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
+                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                            break;
+                        case "no_points":
+                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
+                                          'You Cannot Analyze Leaves Without Points</p>'+
+                                          '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
+                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                            break;
+                    }
+                    e.style.visibility = "visible";
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         </script>
     </head>
     <body onload="">
@@ -391,12 +422,5 @@ if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
             <br/><br/><span>Email Us At: <a href="admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
-    <div id="overlay">
-        <div>
-            <p><b>It Appears You Have No Genotypes<b/><br/><br/>
-                    You Must Add The Genotypes You Are Working With
-                    Before You Can Use Any Other Pages!</p>
-            <button type="button" onClick="overlay();window.location = './addGenotypes.php';">Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick='overlay();'>Ignore</button>
-        </div>
-    </div>
+    <div id="overlay"></div>
 </html>

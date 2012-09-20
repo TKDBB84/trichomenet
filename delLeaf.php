@@ -17,12 +17,11 @@ if(isset($_GET['leaf_id'])){
 
 
 function deleteLeaf($leaf_id,$pdo_dbh) {
-    //include_once 'connection.php';
+    if(!isset($_SESSION)) session_start();
     $error = false;
     $error_text = '';
     $ini_settings = parse_ini_file('./settings.ini', true);
     $uploaddir = $ini_settings['Fiji']['Picture_Path'] . '/';
-    //$pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;", $DBUsername, $DBPassword);
     $stmt_get_image = $pdo_dbh->prepare('SELECT `file_name` FROM leafs WHERE leaf_id = :leaf_id LIMIT 1;');
     $stmt_get_image->bindValue(':leaf_id', $leaf_id, PDO::PARAM_INT);
     $stmt_get_image->execute();
@@ -52,11 +51,9 @@ function deleteLeaf($leaf_id,$pdo_dbh) {
 }
 
 function deleteGenotype($geno_id,$pdo_dbh){
-    //include_once 'connection.php';
+    if(!isset($_SESSION)) session_start();
     $error = false;
     $error_text = '';
-    //$pdo_dbh = new PDO("mysql:host=$DBAddress;dbname=$DBName;", $DBUsername, $DBPassword);
-    
     $stmt_get_all_leaves = $pdo_dbh->prepare("SELECT leaf_id FROM leafs WHERE fk_genotype_id = :geno_id AND `owner_id` = :user_id;");
     $stmt_get_all_leaves->bindValue(':geno_id', $geno_id, PDO::PARAM_INT);
     $stmt_get_all_leaves->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
@@ -69,7 +66,14 @@ function deleteGenotype($geno_id,$pdo_dbh){
             $stmt_del_geno->bindValue(':geno_id', $geno_id, PDO::PARAM_INT);
             $stmt_del_geno->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
             if ($stmt_del_geno->execute()) {
-                if ($stmt_del_geno->rowCount() !== 1){
+                if ($stmt_del_geno->rowCount() === 1){
+                    if($_SESSION['active_geno'] == $geno_id)
+                        unset($_SESSION['active_geno']);
+                    $stmt_chg_dflt_geno = $pdo_dbh->prepare("UPDATE `users` SET `last_active_genotype` = NULL WHERE `last_active_genotype` = :geno_id AND `user_id` = :user_id");
+                    $stmt_chg_dflt_geno->bindValue(':geno_id', $geno_id, PDO::PARAM_INT);
+                    $stmt_chg_dflt_geno->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+                    $stmt_chg_dflt_geno->execute();
+                }else{
                     $error = true;
                     $error_text .= '\nMore Then 1 genotype found';
                 }

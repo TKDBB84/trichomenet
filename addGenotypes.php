@@ -208,7 +208,8 @@ if (count($results) > 0) {
                         <div id="framed">
                             <div style="float: right; margin-right: 50px;">
                                 <p>
-                                    Setting a Genotype as active will propogate that genotype throughout TrichomeNet,<br/>you can change the current genotype from here at anytime
+                                    <strong>Setting a genotype as active will make it available for editing and analysis in TrichomeNet.<br/><br/>
+                                        Only one genotype may be active at a time.</strong>
                                 </p>
                             </div>
                             <div id="genotypes" style="padding-left: 20px;">

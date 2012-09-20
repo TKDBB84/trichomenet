@@ -6,7 +6,7 @@ echo '<td><a href="./addGenotypes.php" onClick="',($page == 'addGenotypes.php')?
                 '1 - Define Genotypes ',($page == 'addGenotypes.php')?'</span>':'','</a></td>',
      '<td><a href="./addLeafs.php" onClick="',($page == 'addLeafs.php')?'return false;':'','">',
             ($page == 'addLeafs.php')?'<span>':'',
-                '2 - Upload Images/Dectect Trichomes',($page == 'addLeafs.php')?'</span>':'','</a></td>',
+                '2 - Upload Images/Detect Trichomes',($page == 'addLeafs.php')?'</span>':'','</a></td>',
      '<td><a href="./analyze3.php" onClick="',($page == 'analyze3.php')?'return false;':'','">',
             ($page == 'analyze3.php')?'<span>':'',
                 '3 - Analyze ',($page == 'analyze3.php')?'</span>':'','</a></td>',

@@ -214,30 +214,6 @@ $form_innerHTML .= '<tr>'.
                 }
                 return parts;
             }
-            /*
-            function getLeafs(id){
-                if(typeof id === 'undefined'){
-                    var genoselect = document.getElementById('geno_select');
-                    var genotype_id = genoselect.options[genoselect.options.selectedIndex].value;
-                }else{
-                    var genotype_id = id;
-                }
-                if(genotype_id == -1 || genotype_id == '-1') return;
-                var xmlhttp;
-                if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                    xmlhttp=new XMLHttpRequest();
-                }else{// code for IE6, IE5
-                    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                }
-                xmlhttp.onreadystatechange=function(){
-                    if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                        document.getElementById('leafs').innerHTML=xmlhttp.responseText;
-                    }
-                }
-                var sendstr = "?genotype_id="+genotype_id;
-                xmlhttp.open("GET","leafsbygenotype.php"+sendstr,true);
-                xmlhttp.send();
-            }*/
     
             function delLeaf(leaf_id){
                 var conf = confirm('This Will Also Delete\nAll Trichomes\nFor This Leaf\nDo You Wish To Proceed?');
