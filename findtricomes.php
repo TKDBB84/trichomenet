@@ -1,5 +1,19 @@
-<?php if(!isset($_SESSION)) session_start();
+<?php 
+if(!isset($_SESSION)) session_start();
 include_once 'connection.php';
+include_once 'chkcookie.php';
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+} else if (validCookie($_COOKIE, $pdo_dbh)) {
+    doLogin($_COOKIE, $pdo_dbh);
+    $user_id = $_SESSION['user_id'];
+} else {
+    $_SESSION['error'] = true;
+    $_SESSION['error_text'] = '<br/>You Do Not Appear To Be Logged In<br/>
+                               Or Your Sessison Has Expired';
+    header('Location: ./login.php');
+    die();
+}
 
 $has_tip = array();
 $leaf_id = $_GET['leaf_id'];
@@ -21,6 +35,14 @@ $filepath = './pics/'.$row['file_name'].'.jpg';
 list($width, $height, $type, $attr) = getimagesize($filepath);
 $stmt_get_leaf_details->closeCursor();
 
+$first_leaf = false;
+$stmt_count_leafs = $pdo_dbh->prepare("SELECT count(leaf_id) as cnt FROM `leafs` WHERE `owner_id` = :user_id");
+$stmt_count_leafs->bindValue(':user_id',$user_id,PDO::PARAM_INT);
+$stmt_count_leafs->execute();
+$result = $stmt_count_leafs->fetch(PDO::FETCH_ASSOC);
+if($result['cnt'] == 1){
+    $first_leaf = true;
+}
 
 $stmt_get_leaf_cords = $pdo_dbh->prepare("Select `xCord`,`yCord`,`cord_type` FROM `cords` WHERE `fk_leaf_id` = :leaf_id");
 $stmt_get_leaf_cords->bindValue(':leaf_id', $leaf_id, PDO::PARAM_INT);
@@ -46,7 +68,12 @@ $stmt_get_leaf_cords->closeCursor();
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"> </script> 
 <script type="text/javascript">
 
-    function loadPage(){
+    document.addEventListener("DOMContentLoaded", function(){
+        <?php
+            if($first_leaf){
+                echo 'overlay("first_leaf");';
+            }
+        ?>
         sessionStorage.clear();
         sessionStorage.setItem('option','outter');
         <?php
@@ -57,7 +84,7 @@ $stmt_get_leaf_cords->closeCursor();
                echo 'addPoint(',$has_tip['x'],',',$has_tip['y'],',\'tip\');';
            }
         ?>
-    }
+    }, false);
     
     function loading(swt){
         var canvas = document.getElementById("myCanvas");
@@ -378,7 +405,6 @@ $stmt_get_leaf_cords->closeCursor();
             ctx.strokeStyle = '#f00';
         }else if( type === 'auto'){
             ctx.strokeStyle = '#0ff';
-            type = 'inner';
         }else if( type === 'tip'){
             ctx.strokeStyle = '#0f0';
             document.getElementById('tip').disabled = true;
@@ -400,11 +426,150 @@ $stmt_get_leaf_cords->closeCursor();
         var key = "type"+i;
         sessionStorage.setItem(key, type);
     }
+    
+    function walkthrough(step){
+        switch(step){
+            case 1:
+                document.getElementById('next_button_div').style.display = "block";
+                document.getElementById('next_button_div').style.visibility = "visibile";
+                document.getElementById('tip_div').style.outline = "3px dotted red";
+                document.getElementById("outter_div").style.outline = "none";
+                document.getElementById("inner_div").style.outline = "none";
+                document.getElementById('btn_stp2').style.display = "block";
+                document.getElementById('btn_stp2').style.visibility = "visibile";
+                document.getElementById('btn_stp3').style.display = "none";
+                document.getElementById('btn_stp3').style.visibility = "invisibile";
+                document.getElementById('btn_stp4').style.display = "none";
+                document.getElementById('btn_stp4').style.visibility = "invisibile";
+                overlay();
+                overlay("first_step");
+                break;
+            case 2:
+                document.getElementById('tip_div').style.outline = "none";
+                document.getElementById("outter_div").style.outline = "3px dotted red";
+                document.getElementById("inner_div").style.outline = "none";
+                document.getElementById('btn_stp2').style.display = "none";
+                document.getElementById('btn_stp2').style.visibility = "invisibile";
+                document.getElementById('btn_stp3').style.display = "block";
+                document.getElementById('btn_stp3').style.visibility = "visibile";
+                document.getElementById('btn_stp4').style.display = "none";
+                document.getElementById('btn_stp4').style.visibility = "invisibile";
+                overlay("second_step");
+                break;
+            case 3:
+                document.getElementById('tip_div').style.outline = "none";
+                document.getElementById("outter_div").style.outline = "none";
+                document.getElementById("inner_div").style.outline = "3px dotted red";
+                document.getElementById('btn_stp2').style.display = "none";
+                document.getElementById('btn_stp2').style.visibility = "invisibile";
+                document.getElementById('btn_stp3').style.display = "none";
+                document.getElementById('btn_stp3').style.visibility = "invisibile";
+                document.getElementById('btn_stp4').style.display = "block";
+                document.getElementById('btn_stp4').style.visibility = "visibile";
+                overlay("third_step");
+                break;
+           case 4:
+                document.getElementById('next_button_div').style.display = "none";
+                document.getElementById('next_button_div').style.visibility = "invisibile";
+                document.getElementById('tip_div').style.outline = "none";
+                document.getElementById("outter_div").style.outline = "none";
+                document.getElementById("inner_div").style.outline = "none";
+                document.getElementById('btn_stp2').style.display = "none";
+                document.getElementById('btn_stp2').style.visibility = "invisibile";
+                document.getElementById('btn_stp3').style.display = "none";
+                document.getElementById('btn_stp3').style.visibility = "invisibile";
+                document.getElementById('btn_stp4').style.display = "none";
+                document.getElementById('btn_stp4').style.visibility = "invisibile";
+                overlay("forth_step");
+                break;
+        }
+    }
+    
+    
+    function overlay(arg){
+                var e = document.getElementById("overlay");
+                if(e.style.visibility == "visible"){
+                    e.style.visibility = "hidden";
+                    document.body.style.overflow = 'auto';
+                }else{
+                    window.scroll(0,0);
+                    switch(arg){
+                        case "first_leaf":
+                            e.innerHTML = '<div><p><b>It Looks Like This Is Your First Leaf!<b/><br/><br/>'+
+                                          'Would You Like Us To Walk You Through How '+
+                                          'To Mark Trichomes </p>'+
+                                          '<button type="button" onClick="walkthrough(1);">'+
+                                          'Yes</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">No</button></div>';
+                            break;
+                        case "first_step":
+                            e.innerHTML = '<div><p><b>Great!<b/><br/><br/>'+
+                                          '<p>First we start by marking the `Tip` of the leaf.  '+
+                                          'Be consistent as this is the point that will be used '+
+                                          'to align this leaf with other leaves for analysis.</p>' +
+                                          '<p>Select `Tip` from the settings below and click on the '+
+                                          'area of the leaf you wish to be the tip. A green circle '+
+                                          'will appear marking your selection. If you are unhappy '+
+                                          'with its position, you may delete it by choosing the '+
+                                          '`delete` option from the menu and selecting the mark '+
+                                          'you desire to remove.</p>'+
+                                          '<p>When you are satisfied with your selection, please click the [Next Step] button</p>'+
+                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                            break;
+                        case "second_step":
+                            e.innerHTML = '<div><p><b>Good<b/><br/><br/>'+
+                                          '<p>Now you will be asked to mark the marginal trichomes on your leaf.</p>'+
+                                          '<p>Select `Outer` from the menu and click on the relevant trichomes. '+
+                                          'These marks will appear in red and may be deleted as previously described.</p>'+
+                                          '<p>It is important to mark marginal trichomes in order as they are used to '+
+                                          'draw the leaf edge during analysis.  Marking trichomes out of order will '+
+                                          'cause the leaf edge to appear jagged joining the trichomes in the order '+
+                                          'they were clicked. If necessary, delete marked trichomes as previously described.</p>'+
+                                          '<p>When you are done, click the [Next Step] button</p>'+
+                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                            break;
+                        case "third_step":
+                            e.innerHTML = '<div><br/>'+
+                                          '<p>Now you can mark laminal trichomes.</p>'+
+                                          '<p>Choose `inner` from the menu and click on all '+
+                                          'the laminal trichomes. Order is not important.</p>'+
+                                          '<p>Alternatively, you may choose to use the auto '+
+                                          'detect trichome function by choosing a sensitivity '+
+                                          'level and clicking [Find Trichomes]. This will clear '+
+                                          'any laminal trichomes you have chosen but will leave '+
+                                          'marginal and leaf tip selections intact.</p>'+
+                                          '<p>Once automatic detection has finished, you may '+
+                                          'choose to add or remove trichome marks automatically '+
+                                          'before saving your work.</p>'+
+                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                            break;
+                        case "forth_step":
+                            e.innerHTML = '<div><p><b>Congratulations<b/><br/><br/>'+
+                                          '<p>You have marked the trichomes in your first '+
+                                          'leaf. Feel free to experiment using combinations '+
+                                          'of automatic &amp; manual trichome detection at '+
+                                          'different sensitivities to see what works best '+
+                                          'for your workflow.</p><p>Be sure to save your work '+
+                                          'by clicking the [save] button at the bottom of the page <p>'+
+                                          '<p>Enjoy.</p>'+
+                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                            break;
+                        
+                        case "no_points":
+                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
+                                          'You Cannot Analyze Leaves Without Points</p>'+
+                                          '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
+                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                            break;
+                    }
+                    e.style.visibility = "visible";
+                    document.body.style.overflow = 'hidden';
+                }
+            }
 </script>
 </head>
 
 
-<body onload="loadPage();"> 
+<body onload=""> 
 <div class="header">
             <div class="header" id="logo"></div>
             <div class="header" id="logo_text">
@@ -449,18 +614,29 @@ $stmt_get_leaf_cords->closeCursor();
                 <div id="framed" style="margin-left: 0px; margin-right: 0px;">
                     <canvas id="myCanvas" onmousedown="draw(event);" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style=" background:url(<?php echo $filepath; ?>);"></canvas>
                     <br/>
+                    <?php 
+                    if($first_leaf){
+                        echo '<div id="next_button_div" style="display:none;">
+                                    <button type="button" id="btn_stp2" onClick="walkthrough(2);">Next Step</button>
+                                    <button type="button" id="btn_stp3" onClick="walkthrough(3);">Next Step</button>
+                                    <button type="button" id="btn_stp4" onClick="walkthrough(4);">Next Step</button>
+                              </div>';
+                    }
+                    ?>
+                    <div id="settings">
                     Set Sensitivity:<br/>
-                    <input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
-                    <input  id="txt" type="text" value="150" size="3" readonly/>
-                    <button onClick="getAutoCords(document.getElementById('txt').value)">Find Tricomes</button>
-                    <br/>
-                    <input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/>Mark Leaf Tip<br/>
-                    <input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>>Outer<br/>
-                    <input type="radio" id="inner" name="type" onclick='unCheckDelete();'>Inner<br/>
-                    <input type="checkbox" id='del' onclick='unSelectRadio();'/>Delete<br/>
-                    <button onclick="clearmything(false);">Clear</button>
-                    <button onclick="saveIt();">Save</button>
-                    <div id="csv"></div>
+                        <input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
+                        <input  id="txt" type="text" value="150" size="3" readonly/>
+                        <button onClick="getAutoCords(document.getElementById('txt').value)">Find Tricomes</button>
+                        <br/>
+                        <div id="tip_div" style="width: 125px;"><input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/><label id="lbltip" for="tip">Mark Leaf Tip</label></div>
+                        <div id="outter_div" style="width: 125px;"><input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>><label id="lbloutter" for="outter">Outer</label></div>
+                        <div id="inner_div" style="width: 125px;"><input type="radio" id="inner" name="type" onclick='unCheckDelete();'><label id="lblinner" for="inner">Inner</label></div>
+                        <div id="del_div" style="width: 125px;"><input type="checkbox" id='del' onclick='unSelectRadio();'/><label id="lbldel" for="del">Delete</label></div>
+                        <button onclick="clearmything(false);">Clear</button>
+                        <button onclick="saveIt();">Save</button>
+                        <div id="csv"></div>
+                    </div>
                 </div>
             </div>
             <div id="push"></div>
@@ -470,4 +646,5 @@ $stmt_get_leaf_cords->closeCursor();
             <br/><br/><span>Email Us At: <a href="mailto:admin@trichomenet.com">admin@TrichomeNet.com</a></span>
         </div>
     </body>
+    <div id="overlay"></div>
 </html>        

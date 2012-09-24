@@ -70,12 +70,12 @@ if ($active_geno !== -1) {
     $stmt_get_leafs_by_genotype->closeCursor();
 }
 
-$has_leafs = (count($all_leafs) !== 0);
+$has_leafs = (isset($all_leafs) && count($all_leafs) !== 0);
 $stmt_count_trichomes = $pdo_dbh->prepare("SELECT xCord FROM `cords` JOIN `leafs` ON fk_leaf_id = leaf_id WHERE owner_id = :user_id LIMIT 1");
 $stmt_count_trichomes->bindValue(':user_id',$user_id,PDO::PARAM_INT);
 $stmt_count_trichomes->execute();
 $result2 = $stmt_count_trichomes->fetch(PDO::FETCH_ASSOC);
-$has_cords = ($result2['xCord'] === NULL);
+$has_cords = ($result2['xCord'] === false);
 ?>
 <!DOCTYPE html>
 <html>
@@ -87,8 +87,8 @@ $has_cords = ($result2['xCord'] === NULL);
         <script type="text/javascript">
             document.addEventListener("DOMContentLoaded", function(){
             <?php
-            if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
-                echo 'overlay("no_genotypes");';
+            if(isset($genotypes[0]) && $genotypes[0] === "No Genotypes"){
+               echo 'overlay("no_genotypes");';
             } elseif ($active_geno === -1) {
                 'overlay("no_active_type");';
             } elseif (isset($_SESSION['all_ids'])) {
@@ -98,7 +98,7 @@ $has_cords = ($result2['xCord'] === NULL);
             }elseif((isset($has_leafs) && $has_leafs === false)){
                echo 'overlay("no_leafs");';
             }elseif(isset($has_cords) && $has_cords === false){
-               echo 'overlay("no_points");';
+                echo 'overlay("no_points");';
             }
             ?>
             }, false);

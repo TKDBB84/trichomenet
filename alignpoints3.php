@@ -311,8 +311,6 @@ foreach($leaf_ids as $leaf_id){
     $all_leaf_avg += $all_dist[$leaf_id] / $num_dists[$leaf_id];
     
 }
-
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
