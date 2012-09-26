@@ -1,0 +1,29 @@
+# _TrichomeNet_
+
+_Description: Trichomenet is an trichome pattern analysis tool designed to work in conjuction with polarized light microscopy images of cleared leaves. The software can detect and analyze trichome positions including density heat map and next neighbor analyses._
+
+## TrichomeNet Setup
+
+_Basic Information And Prerequists_ 
+
+1. _TrichomeNet is developed for use with PHP 5.3+, and tested with MySQL, however other SQL database systems with PHP 5.3+ connectivity should work as well._
+2. _TrichomeNet also requires the GD libraries for PHP._
+3. _TrichomeNet additionally requires FIJI ( http://fiji.sc/ ) to utilize the ImageJ detection._
+4. _A setup script is currenly not included in the repository but is planned to be developed at a later date._
+5. _The settings.ini file contains all database connectivity information as well as path information for TrichomeNet._
+
+## Deploying
+
+### _How to setup the deployment environment_
+
+- _TrichomeNet was developed and test in both an Ubuntu Server Enviroment(x86), as well as a Fedora Desktop Enviroment(x64).  It should however function in any *nix based enviroment providing the above Prerequists are met, and a bash (or some other sh) shell is available to the web user._
+- _Be sure to note the plugin directory for FIJI ( http://fiji.sc/ )_
+- _The web user, (usally www-data) requires read/write access to the fiji plugin folder (on ubuntu: /usr/lib/fiji/plugins ) to create the plugin that detects the cords, as well as read/write access to the temporary dirtory to store the output (usally /tmp)._
+- _In your database create a database & user for trichomenet, in this repository is (dbsetup.sql), execute this sql file in the new database to setup the tables required for new use_
+- _Extract TrichomeNet to web root, or link TrichomeNet to the web root.
+- _Set your database connection info, Heat Map Color and Tolerances, as well as the path information for FIJI and www-data shell, and location of images (defaults are relative paths) in the settings.ini file._
+
+
+## Contributing changes
+
+- _Please Open Github Issues for any bugs you may find._
