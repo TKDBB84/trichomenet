@@ -23,7 +23,7 @@ CREATE TABLE `cords` (
   `xCord` int(11) NOT NULL DEFAULT '0',
   `yCord` int(11) NOT NULL DEFAULT '0',
   `fk_leaf_id` int(11) unsigned NOT NULL,
-  `cord_type` enum('outter','inner') NOT NULL,
+  `cord_type` enum('outter','inner','auto') NOT NULL,
   PRIMARY KEY (`xCord`,`yCord`,`fk_leaf_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED;
 
