@@ -108,10 +108,9 @@ if($active_geno !== -1){
     $form_innerHTML .= '<input type="hidden" name="genotype_id" value="'.$active_geno.'"/>';
     $form_innerHTML .= '<table border="1">'.
             '<tr>'.
-                '<th>Leaf Name</td>'.
-                '<th>Image</td>'.
+                '<th>Leaf</td>'.
                 '<th>Number of<br/>Marked Tricombs</th>'.
-                '<th colspan="3"/>'.
+                '<th colspan="1"/>'.
             '</tr>';
 
     if(count($result) > 0){
@@ -135,13 +134,17 @@ if($active_geno !== -1){
             $row2 = $stmt_get_num_tricomes->fetch(PDO::FETCH_ASSOC);
             $auto = $row2['cnt'];
             $stmt_get_num_tricomes->closeCursor();
-
+            list($thumb_width, $thumb_height, $type, $attr) = getimagesize('./pics/'.$row['file_name'].'_thumb.jpg');
+            
             $form_innerHTML .= '<tr id="'.$row['leaf_id'].'">'.
-                    '<td>'.$row['leaf_name'].'</td>'.
-                    '<td align="center"><img src="./pics/'.$row['file_name'].'_thumb.jpg"/></td>'.
-                    '<td> Marginal: '.$outer.'<br/>Laminal: '.$inner.'<br/>Auto: '.$auto.'<br/></td>'.
-                    '<td><a href="./findtricomes.php?leaf_id='.$row['leaf_id'].'">Mark<br/>Trichomes</a></td>'.
-                    '<td><button type="button" name="dwnld" onClick="fetchImg('.$row['leaf_id'].');">Download<br/>Image</button></td>'.
+                    '<td style="height: '.$thumb_height.'px; width: '.$thumb_width.'px; " background="./pics/'.$row['file_name'].'_thumb.jpg" left top no-repeat>
+                     <div style="position:relative";>
+                        <p style="color: red; position:absolute; bottom:'.(0.125*$thumb_height).'px;">
+                        '.$row['leaf_name'].'
+                        </p>'.
+                        '<button style="position:absolute; bottom:'.($thumb_height*-(.5)).'px; right:0; width: 100%;" type="button" name="dwnld" onClick="fetchImg('.$row['leaf_id'].');">Download Image</button></td>'.
+                     '</div>'.
+                    '<td align="center" ><a href="./findtricomes.php?leaf_id='.$row['leaf_id'].'">Mark Trichomes</a><br/><br/>Marginal: '.$outer.'<br/>Laminal: '.$inner.'<br/>Auto: '.$auto.'<br/></td>'.
                     '<td><button type="button" name="del" onClick=';
             if($user_id == 0)
                 $form_innerHTML .= '"alert(\'Guests Cannot Delete\');"';
@@ -153,12 +156,12 @@ if($active_geno !== -1){
     }
 }
 $form_innerHTML .= '<tr>'.
-            '<td colspan="2">Name: <input type="text" id="leafname" name="new_leaf_name" style="width:80%;"/></td>'.
-            '<td colspan="2"><input type="file" name="new_leaf_file" onChange="setName(this.value);" /></td>'.
-            '<td colspan="2"><button type="submit" name="add_new_leaf"';
+            '<td colspan="1">Name: <input type="text" id="leafname" name="new_leaf_name" style="width:80%;"/></td>'.
+            '<td colspan="1"><input type="file" name="new_leaf_file" onChange="setName(this.value);" /></td>'.
+            '<td colspan="1"><button type="submit" name="add_new_leaf"';
             if($user_id == 0)
                 $form_innerHTML .= ' onClick="alert(\'Guests Cannot Add Data\');return false;"';
-            $form_innerHTML .= '>Add New</button></td>'.
+            $form_innerHTML .= '>Upload</button></td>'.
     '</tr>'.
  '</table>'.'<em>pictures MUST BE 5 MB or smaller</em>';
 
@@ -331,9 +334,11 @@ $form_innerHTML .= '<tr>'.
                 </p>
                 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
                             <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
-                    <div id="framed">                    
-                        <b>Leaves For Current <?php echo $genotypes[$active_geno]; ?> Genotype: </b>
+                    <div id="framed">
+                        <?php if(isset($active_geno) && $active_geno != -1){ ?>
+                        <b>Leaves For Current <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a> Genotype: </b>
                         <div id="leafs" style="padding-left: 20px;"><?php echo $form_innerHTML; ?></div>
+                        <?php }else{ echo 'No Genotype Active'; } ?>
                     </div>
                 </form>
             </div>

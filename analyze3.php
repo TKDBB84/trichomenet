@@ -75,7 +75,7 @@ $stmt_count_trichomes = $pdo_dbh->prepare("SELECT xCord FROM `cords` JOIN `leafs
 $stmt_count_trichomes->bindValue(':user_id',$user_id,PDO::PARAM_INT);
 $stmt_count_trichomes->execute();
 $result2 = $stmt_count_trichomes->fetch(PDO::FETCH_ASSOC);
-$has_cords = ($result2['xCord'] === false);
+$has_cords = ($result2 !== false);
 ?>
 <!DOCTYPE html>
 <html>
@@ -334,6 +334,18 @@ $has_cords = ($result2['xCord'] === false);
                                 <tbody>
                                     <tr>
                                         <td>
+                                            <strong>General</strong>
+                                        </td>
+                                        <td>
+                                            Count Outer Trichomes:<br/>
+                                            <input type="radio" name="count_outer" value="1" onClick="document.getElementById('edge2').checked = true;document.getElementById('edge1').disabled = true;document.getElementById('edge2').disabled = true;" <?php if (isset($_SESSION['outline']) && $_SESSION['outline'] == 1) echo 'checked'; ?>> Yes<br/>
+                                            <input type="radio" name="count_outer" value="0" onClick="document.getElementById('edge1').disabled = false;document.getElementById('edge2').disabled = false;" <?php if (!isset($_SESSION['count_outer']) || (isset($_SESSION['count_outer']) && $_SESSION['count_outer'] == 0)) echo 'checked'; ?>> No
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tbody>
+                                    <tr>
+                                        <td>
                                             <strong>Heat Map</strong>
                                         </td>
                                         <td>
@@ -391,23 +403,11 @@ $has_cords = ($result2['xCord'] === false);
                                         </td>
                                     </tr>
                                 </tbody>
-                                <tbody>
                                     <tr>
-                                        <td>
-                                            <strong>General</strong>
-                                        </td>
-                                        <td>
-                                            Count Outer Trichomes:<br/>
-                                            <input type="radio" name="count_outer" value="1" onClick="document.getElementById('edge2').checked = true;document.getElementById('edge1').disabled = true;document.getElementById('edge2').disabled = true;" <?php if (isset($_SESSION['outline']) && $_SESSION['outline'] == 1) echo 'checked'; ?>> Yes<br/>
-                                            <input type="radio" name="count_outer" value="0" onClick="document.getElementById('edge1').disabled = false;document.getElementById('edge2').disabled = false;" <?php if (!isset($_SESSION['count_outer']) || (isset($_SESSION['count_outer']) && $_SESSION['count_outer'] == 0)) echo 'checked'; ?>> No
+                                        <td align="center" colspan="6"><br/>
+                                            <button style="left: 500px;" type="Submit">Analyze Selected</button>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            <button type="Submit">Analyze Selected</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
                             </table>
                         </form>
 

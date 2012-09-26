@@ -62,7 +62,7 @@ $number_of_leafs = count($leaf_ids);
 
 
     
-//~~~~~~~~~~~~~~~~~~~~~~~~SET THE SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~GET THE SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if(isset($_POST['additional_boxes'])){
     $additional_boxes = $_POST['additional_boxes'];
 }else

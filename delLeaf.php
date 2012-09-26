@@ -35,11 +35,8 @@ function deleteLeaf($leaf_id,$pdo_dbh) {
         if ($stmt_del_leaf->rowCount() === 1) {
             $stmt_del_cords->bindValue(':leaf_id', $leaf_id, PDO::PARAM_INT);
             if ($stmt_del_cords->execute()) {
-                if (unlink($uploaddir . $image_name . '_thumb.jpg')) {
-                    if (!(unlink($uploaddir . $image_name . '.jpg')))
-                        $error = true;
-                }else
-                    $error = true;
+                    unlink($uploaddir . $image_name . '_thumb.jpg');
+                    unlink($uploaddir . $image_name . '.jpg');
             }else
                 $error = true;
         }else

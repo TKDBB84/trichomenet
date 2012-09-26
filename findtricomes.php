@@ -617,9 +617,11 @@ $stmt_get_leaf_cords->closeCursor();
                     <?php 
                     if($first_leaf){
                         echo '<div id="next_button_div" style="display:none;">
+                                    <br/><br/>
                                     <button type="button" id="btn_stp2" onClick="walkthrough(2);">Next Step</button>
                                     <button type="button" id="btn_stp3" onClick="walkthrough(3);">Next Step</button>
                                     <button type="button" id="btn_stp4" onClick="walkthrough(4);">Next Step</button>
+                                    <br/><br/>
                               </div>';
                     }
                     ?>
