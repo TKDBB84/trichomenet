@@ -211,13 +211,11 @@ $stmt_get_leaf_cords->closeCursor();
             alert("Please Choose Inner Or Outer");
             return;
         }
-        var x;
-        var y;
         var c=document.getElementById("myCanvas");
         var ctx=c.getContext("2d");
         var rect = c.getBoundingClientRect();
-        var x = event.clientX - rect.left;
-        var y = event.clientY - rect.top;
+        var x = Math.round(event.clientX - rect.left);
+        var y = Math.round(event.clientY - rect.top);
         
         var removed = -1;
         var len = (sessionStorage.length-1) / 3;
@@ -326,7 +324,9 @@ $stmt_get_leaf_cords->closeCursor();
     }
         
     function saveIt(){
-        var max = (sessionStorage.length - 1) / 3;
+        var len = sessionStorage.length;
+        var max = (len - 1) / 3;
+        var foundtip = false;
         var allX = new Array();
         var allY = new Array();
         var allType = new Array();
@@ -340,6 +340,13 @@ $stmt_get_leaf_cords->closeCursor();
                 allX[i] = xCord;
                 allY[i] = yCord;
                 allType[i] = Type;
+            if(Type == 'tip'){
+                foundtip = true;
+            }
+        }
+        if(!foundtip){
+            alert("You Must Mark A Tip Before Saving!");
+            return false;
         }
         var phpX = allX.toString();
         var phpY = allY.toString();
@@ -412,7 +419,7 @@ $stmt_get_leaf_cords->closeCursor();
             alert("An Error Has Occured");
             return;
         }
-        ctx.lineWidth   = 2;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         //arc(x,y,r,startAngle,EndAngle,clockwise)
         ctx.arc(x,y,5,0,Math.PI*2,true);

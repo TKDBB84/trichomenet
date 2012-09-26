@@ -554,8 +554,11 @@ foreach($all_boxes as $box_num => $total_in_box){
                 $row = $sql_get_leaf_name_by_id->fetch(PDO::FETCH_ASSOC);
                 $output_string .= '\''.$row['leaf_name'].'\',';
             }
+            $sql_get_leaf_name_by_id->closeCursor();
             $output_string .= '\'Average\'';//substr($output_string,0,-1);
+            
             $output_string .= '],';
+            
             foreach($BIN_SIZES as $bin_num => $size){
                 $tmp_string = '[\'>'.$size.'\',';
                 $is_zero = 0;
@@ -576,11 +579,53 @@ foreach($all_boxes as $box_num => $total_in_box){
                 $output_string .= $tmp_string;
             }
             $output_string = substr($output_string,0,-1);
+            unset($tmp_string);
+            
+            $nn_output_string = '[\'Distances\',';
+            foreach($leaf_ids as $leaf_id){
+                $sql_get_leaf_name_by_id->execute();
+                $row = $sql_get_leaf_name_by_id->fetch(PDO::FETCH_ASSOC);
+                $nn_output_string .= '\''.$row['leaf_name'].'\',';
+            }
+            $sql_get_leaf_name_by_id->closeCursor();
+            $nn_output_string .= '\'Average\'';
+            $nn_output_string .= '],';
+            foreach($NN_BIN_SIZES as $nn_bin_num => $nn_size){
+                $tmp_string = '[\'>'.$nn_size.'\',';
+                $is_zero = 0;
+                $all_values = array();
+                foreach($leaf_ids as $leaf_id){
+                    if(isset($next_neighbor_distances_bins[$leaf_id][$nn_bin_num])){
+                        $tmp_string .= $next_neighbor_distances_bins[$leaf_id][$nn_bin_num].',';
+                        $all_values[] = $next_neighbor_distances_bins[$leaf_id][$nn_bin_num];
+                    }else{
+                        $tmp_string .= "0,";
+                        $is_zero++;
+                        $all_values[] = 0;
+                    }
+                }
+                $tmp_string .= array_sum($all_values)/count($all_values);
+                $tmp_string .= "],";
+                if($is_zero == count($leaf_ids)) $tmp_string = '';
+                $nn_output_string .= $tmp_string;
+            }
+            
+            $nn_output_string = substr($nn_output_string,0,-1);
+            //$next_neighbor_distances_bins
          ?>
         var data = google.visualization.arrayToDataTable([<?php echo $output_string; ?>]);
-
+        var nn_data = google.visualization.arrayToDataTable([<?php echo $nn_output_string; ?>]);
         // Set chart options
-        var options = {title : 'Next Neighbor Distances',
+        var options = {title : 'Trichome Distances',
+                        width: 800,
+                        height: 600,
+                        vAxis: {title: "Number Found"},
+                        hAxis: {title: "Distance Bins"},
+                        seriesType: "bars",
+                        series: {<?php echo count($leaf_ids); ?>: {type: "line"} }
+                      };
+
+        var nn_options = {title : 'Next Neighbor Distances',
                         width: 800,
                         height: 600,
                         vAxis: {title: "Number Found"},
@@ -591,8 +636,12 @@ foreach($all_boxes as $box_num => $total_in_box){
 
         // Instantiate and draw our chart, passing in some options.
         var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-        <?php if($SHOW_BIN_GRAPH)
-                echo 'chart.draw(data, options);'; ?>
+        var nn_chart = new google.visualization.ComboChart(document.getElementById('nn_chart_div'));
+        <?php 
+            if($SHOW_BIN_GRAPH)
+                echo 'chart.draw(data, options);';
+                echo 'nn_chart.draw(nn_data,nn_options);';
+        ?>
         init();
       }
       
@@ -975,6 +1024,7 @@ echo '<br/><br/> AVG PER BOX PER LEAF: ',array_sum($all_boxes)/(count($found_box
     ?>
 <br/>
     <div id="chart_div"></div>
+    <div id="nn_chart_div"></div>
     <div id="csv" style="padding-bottom: 50px; padding-top: 50px;">
         <button type="button" onClick="makeCSV();">Export Data</button>
     </div>
