@@ -325,8 +325,7 @@ $form_innerHTML .= '<tr>'.
         </div>
         <div class="contents">
             <div id="contents_header">
-                <b>2 - Upload Leaf Images/Trichome Marking<br/>
-                        
+                2 - Upload Leaf Images/Trichome Marking   
             </div>
             <div id="main_contents">
                 <p>
@@ -344,7 +343,7 @@ $form_innerHTML .= '<tr>'.
                     <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
                                 <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
                         <?php if(isset($active_geno) && $active_geno != -1){ ?>
-                        <b>Leaves For Current <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a> Genotype: </b>
+                        Leaves For Current <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a> Genotype: 
                         <div id="leafs" style="padding-left: 20px;"><?php echo $form_innerHTML; ?></div>
                         <?php }else{ echo 'No Genotype Active'; } ?>
                     </div>
