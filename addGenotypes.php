@@ -195,7 +195,7 @@ if (count($results) > 0) {
             </div>
             <div class="contents">
                 <div id="contents_header">
-                    <b>Genotypes</b>
+                    <b>1 - Define Genotypes/Catagories</b>
                 </div>
                 <div id="main_contents">
                     <p>

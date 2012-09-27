@@ -41,7 +41,9 @@ if(!isset($_SESSION))    session_start();
                     <p>
                     For more detailed descriptions and protocols, see our publication (Details of paper will be added after peer review).
                     </p>
-                    <!--<canvas style="height: 960px; width: 1280px; background:url(./img_0e5145924d9c945f931c3821b5518246.jpg) no-repeat center center;"/>-->
+                    <p align="center"><br/>
+                     <img src="./pics/home.png"/>
+                    </p>
                 </div>
             </div>            
         </div>

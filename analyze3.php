@@ -288,7 +288,7 @@ $has_cords = ($result2 !== false);
         </div>
         <div class="contents">
             <div id="contents_header">
-                <b>Trichome Positional Analysis:</b>
+                <b>3 - Trichome Positional Analysis:</b>
             </div>
             <div id="main_contents">
                 Select leaves and options for positional analysis. Grouping of multiple leaves is currently limited to leaves within a genotype.

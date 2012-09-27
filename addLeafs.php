@@ -325,16 +325,24 @@ $form_innerHTML .= '<tr>'.
         </div>
         <div class="contents">
             <div id="contents_header">
-                <b>View All Leaves In Genotype:<br/>
+                <b>2 - Upload Leaf Images/Trichome Marking<br/>
                         
             </div>
             <div id="main_contents">
                 <p>
-                    Upload leaf images into their respective categories. You can choose to keep original file names or assign new names to each image. After an image is uploaded, it can be used for trichome detection via the "Detect Trichomes" button.
+                    Upload leaf images into their respective categories. You can choose to keep original file names or assign new names to each image.
+                    We recommend a naming scheme which includes leaf number replicate number.
+                    After an image is uploaded, it can be used for trichome detection via the "Mark Trichomes" button.
                 </p>
-                <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
-                            <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
-                    <div id="framed">
+                <p>
+                    Images should be uploaded at a resolution of 1280 x 960 pixels or smaller.
+                    Leaves should be horizontal, with the tip on the right hand side of the picture.
+                    See <a href="./example.html"
+                              onClick="window.open('./example.html','','width=375, height=350, left=200, top=200, screenX=200, screenY=200');return false;">An Example Here</a>
+                </p>
+                <div id="framed">
+                    <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
+                                <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
                         <?php if(isset($active_geno) && $active_geno != -1){ ?>
                         <b>Leaves For Current <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a> Genotype: </b>
                         <div id="leafs" style="padding-left: 20px;"><?php echo $form_innerHTML; ?></div>
