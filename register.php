@@ -49,7 +49,7 @@ if (!isset($_SESSION))
         <style type="text/css" media="screen">
 
         </style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
     </head>
 
     <body>
@@ -66,11 +66,11 @@ if (!isset($_SESSION))
         <div style="height:100%; width: 100%; position: relative;">
             <div class="sidebar">
                 <span>
-                    Thank you for your Interested in TrichomeNet. 
+                    Thank you for your Interested in TRICHOMENET. 
                     If you have any problems with the software, 
                     please leave any issues at: 
                     <a href="https://github.com/TKDBB84/trichomenet">
-                        TrichomeNet On Github
+                        TRICHOMENET On Github
                     </a>
                 </span>
             </div>

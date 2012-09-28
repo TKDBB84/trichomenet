@@ -109,7 +109,7 @@ if($active_geno !== -1){
     $form_innerHTML .= '<table border="1">'.
             '<tr>'.
                 '<th>Leaf</td>'.
-                '<th>Number of<br/>Marked Tricombs</th>'.
+                '<th>Leaf Details</th>'.
                 '<th colspan="1"/>'.
             '</tr>';
 
@@ -144,7 +144,9 @@ if($active_geno !== -1){
                         </p>'.
                         '<button style="position:absolute; bottom:'.($thumb_height*-(.5)).'px; right:0; width: 100%;" type="button" name="dwnld" onClick="fetchImg('.$row['leaf_id'].');">Download Image</button></td>'.
                      '</div>'.
-                    '<td align="center" ><a href="./findtricomes.php?leaf_id='.$row['leaf_id'].'">Mark Trichomes</a><br/><br/>Marginal: '.$outer.'<br/>Laminal: '.$inner.'<br/>Auto: '.$auto.'<br/></td>'.
+                    '<td align="center" ><a href="./findtricomes.php?leaf_id='.$row['leaf_id'].'">Mark Trichomes</a><br/><br/>
+                        <b>Number Of Marked Trichomes:</b>
+                        <br/>Marginal: '.$outer.'<br/>Laminal: '.$inner.'<br/>Auto: '.$auto.'<br/></td>'.
                     '<td><button type="button" name="del" onClick=';
             if($user_id == 0)
                 $form_innerHTML .= '"alert(\'Guests Cannot Delete\');"';
@@ -156,8 +158,8 @@ if($active_geno !== -1){
     }
 }
 $form_innerHTML .= '<tr>'.
-            '<td colspan="1">Name: <input type="text" id="leafname" name="new_leaf_name" style="width:80%;"/></td>'.
-            '<td colspan="1"><input type="file" name="new_leaf_file" onChange="setName(this.value);" /></td>'.
+            '<td colspan="1">Name:<br/><input type="text" id="leafname" name="new_leaf_name" style="width:80%;"/></td>'.
+            '<td colspan="1">Upload Another Leaf To This Category:<br/><input type="file" name="new_leaf_file" onChange="setName(this.value);" /></td>'.
             '<td colspan="1"><button type="submit" name="add_new_leaf"';
             if($user_id == 0)
                 $form_innerHTML .= ' onClick="alert(\'Guests Cannot Add Data\');return false;"';
@@ -172,7 +174,7 @@ $form_innerHTML .= '<tr>'.
         <LINK href="./css/trichomenet.css" rel="stylesheet" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
         <script type="text/javascript">
             <?php if(isset($genotypes[0]) && $genotypes[0] === "No Genotypes"){
                         echo 'document.addEventListener("DOMContentLoaded", function()
@@ -306,32 +308,31 @@ $form_innerHTML .= '<tr>'.
 
         <!--<div style="height:100%; width: 100%; position: relative;">-->
         <div class="sidebar">
-            <span>Step 1: Define Genotypes</span>
+                <span>Step 1: Define Categories</span>
                 <br/><br/>
-                <span>Step 2: Upload Leaf Images</span>
+                <span>Step 2: Upload Images/Mark Trichomes</span>
                 <br/><br/>
-                <span>Step 3: Detect Trichomes</span>
-                <br/><br/>
-                <span>Step 4: Conduct Analyses</span>
+                <span>Step 3: Analyze</span>
                 <br/><br/>
                 <span style="position: absolute; bottom: 0; right: 0;">
                     If you have any problems with the software, 
                       please leave any issues at: 
                       <a href="https://github.com/TKDBB84/trichomenet">
-                        TrichomeNet On Github
+                        TRICHOMENET On Github
                       </a>
                       <br/><br/>
                 </span>
-        </div>
+            </div>
         <div class="contents">
             <div id="contents_header">
-                2 - Upload Leaf Images/Trichome Marking   
+                2 - Upload Images/Mark Trichomes   
             </div>
             <div id="main_contents">
                 <p>
                     Upload leaf images into their respective categories. You can choose to keep original file names or assign new names to each image.
-                    We recommend a naming scheme which includes leaf number replicate number.
-                    After an image is uploaded, it can be used for trichome detection via the "Mark Trichomes" button.
+                    We recommend a naming scheme which includes leaf number and replicate number.
+                    After an image is uploaded, it can be used for trichome marking via the "Mark Trichomes" button. 
+                    Multiple leaf images can be uploaded into a single category.
                 </p>
                 <p>
                     Images should be uploaded at a resolution of 1280 x 960 pixels or smaller.
@@ -343,7 +344,7 @@ $form_innerHTML .= '<tr>'.
                     <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
                                 <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
                         <?php if(isset($active_geno) && $active_geno != -1){ ?>
-                        Leaves For Current <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a> Genotype: 
+                        Leaves For Current Category: <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a><br/><br/>
                         <div id="leafs" style="padding-left: 20px;"><?php echo $form_innerHTML; ?></div>
                         <?php }else{ echo 'No Genotype Active'; } ?>
                     </div>

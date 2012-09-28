@@ -31,11 +31,11 @@ if(isset($_POST) && isset($_POST['email'])){
                 $error = true;
                 $error_text .= 'Error Updating New Password In Database, Please Try Again...<br/>';
             }
-            $subject = "Your TrichomeNet Password Has Been Reset";
+            $subject = "Your TRICHOMENET Password Has Been Reset";
             $message = "Your Password Has been Reset... \n
                         The new Password to access your account is:\n\n
                         $newPassword";
-            $headers = "From: " . "TrichomeNet";
+            $headers = "From: TRICHOMENET";
             mail($to,$subject,$message,$headers);
         }
     }
@@ -50,7 +50,7 @@ if(isset($_POST) && isset($_POST['email'])){
         <style type="text/css" media="screen">
 
         </style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
     </head>
 
     <body>
@@ -67,11 +67,11 @@ if(isset($_POST) && isset($_POST['email'])){
         <div style="height:100%; width: 100%; position: relative;">
             <div class="sidebar">
                 <span>
-                      Thank you for your Interested in TrichomeNet. 
+                      Thank you for your Interested in TRICHOMENET. 
                       If you have any problems with the software, 
                       please leave any issues at: 
                       <a href="https://github.com/TKDBB84/trichomenet">
-                        TrichomeNet On Github
+                        TRICHOMENET On Github
                       </a>
                       <br/><br/>
                       Or Email Us At: <a href="mailto:admin@trichomenet.com">admin@TrichomeNet.com</a>

@@ -12,7 +12,7 @@ if(!isset($_SESSION))    session_start();
         <style type="text/css" media="screen">
             
         </style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
     </head>
     
     <body>
@@ -32,14 +32,17 @@ if(!isset($_SESSION))    session_start();
             </div>
             <div class="contents">
                 <div id="contents_header">
-                    Welcome to TrichomeNet!
+                    Welcome to TRICHOMENET!
                 </div>
                 <div id="main_contents">
                     <p>
-                    Trichomenet is an trichome pattern analysis tool designed to work in conjuction with polarized light microscopy images of cleared leaves. The software can detect and analyze trichome positions including density heat map and next neighbor analyses.
+                    TRICHOMENET is an trichome pattern analysis tool designed to work in conjuction with polarized light microscopy images of cleared leaves. The software can mark and perform trichome positional analyses including density heat maps and trichome distance distributions.
                     </p>
                     <p>
                     For more detailed descriptions and protocols, see our publication (Details of paper will be added after peer review).
+                    </p>
+                    <p>
+                        To setup a private local server, the repository and instructions are available through Github at <a href="https://github.com/TKDBB84/trichomenet">https://github.com/TKDBB84/trichomenet</a>
                     </p>
                     <p align="center"><br/>
                      <img src="./pics/home.png"/>

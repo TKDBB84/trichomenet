@@ -35,6 +35,7 @@ $stmt_get_cords_by_leafid->bindParam(':leaf_id', $leaf_id, PDO::PARAM_INT);
 $stmt_get_leaf_name_by_leafid = $pdo_dbh->prepare('SELECT `leaf_name` FROM leafs WHERE leaf_id = :leaf_id');
 $stmt_get_leaf_name_by_leafid->bindParam(':leaf_id', $leaf_id, PDO::PARAM_INT);
 
+$output .= '"Trichome Coordinates By Leaf"'.PHP_EOL;
 
 foreach($leaf_ids as $leaf_id){
     $stmt_get_leaf_name_by_leafid->execute();
@@ -53,6 +54,7 @@ foreach($leaf_ids as $leaf_id){
 }
 
 //die(var_dump($bin_details));
+$output .= '"Trichome Counts Per Leaf"'.PHP_EOL;
 $output .= '"Leaf Name","Num Trichomes"'.PHP_EOL;
 $leaf_names = array();
 
@@ -69,16 +71,16 @@ foreach($leaf_ids as $leaf_id){
 }
 
 
-
-$output .= '"Leaf Name","Bin","Num_Tricomes"'.PHP_EOL;
+$output .= '"All Trichome Distance Values"'.PHP_EOL;
+$output .= '"Leaf Name","Bin","Num_Trichomes"'.PHP_EOL;
 foreach($bin_details as $leaf_id => $bins){
     foreach($bins as $bin_num => $num_points){
         $bin_size = "<".(($bin_num + 1)*$bin_step);
         $output .= '"'.$leaf_names[$leaf_id].'","'.$bin_size.'",'.$num_points.PHP_EOL;
     }
 }
-
-$output .= '"Leaf Name","Next Neighbor Bin","Num_Tricomes"'.PHP_EOL;
+$output .= '"Next Neighbor Trichome Distance Values"'.PHP_EOL;
+$output .= '"Leaf Name","Next Neighbor Bin","Num_Trichomes"'.PHP_EOL;
 foreach($nn_bin_details as $leaf_id => $bins){
     foreach($bins as $bin_num => $num_points){
         $bin_size = "<".(($bin_num + 1)*$nn_bin_step);

@@ -616,11 +616,11 @@ foreach($all_boxes as $box_num => $total_in_box){
         var data = google.visualization.arrayToDataTable([<?php echo $output_string; ?>]);
         var nn_data = google.visualization.arrayToDataTable([<?php echo $nn_output_string; ?>]);
         // Set chart options
-        var options = {title : 'Trichome Distances',
+        var options = {title : 'All Trichome Distances',
                         width: 800,
                         height: 600,
-                        vAxis: {title: "Number Found"},
-                        hAxis: {title: "Distance Bins"},
+                        vAxis: {title: "Number Of Distances In Category"},
+                        hAxis: {title: "Binned Distances (Number Of Pixels)"},
                         seriesType: "bars",
                         series: {<?php echo count($leaf_ids); ?>: {type: "line"} }
                       };
@@ -628,8 +628,8 @@ foreach($all_boxes as $box_num => $total_in_box){
         var nn_options = {title : 'Next Neighbor Distances',
                         width: 800,
                         height: 600,
-                        vAxis: {title: "Number Found"},
-                        hAxis: {title: "Distance Bins"},
+                        vAxis: {title: "Number Of Distances In Category"},
+                        hAxis: {title: "Binned Distances (Number Of Pixels)"},
                         seriesType: "bars",
                         series: {<?php echo count($leaf_ids); ?>: {type: "line"} }
                       };
@@ -711,7 +711,7 @@ foreach($all_boxes as $box_num => $total_in_box){
                     }
                 }
                 
-                $color_key = '<table border="1"><tr><td>Leaf Name</td><td>Color</td><td>Include Leaf ?</td><td>Include Outline</td></tr>';
+                $color_key = '<table border="1"><thead><th colspan="4">Heat Map Options</th></thead><tr><td>Leaf Name</td><td>Outline Color</td><td>Include Leaf ?</td><td>Show Outline ?</td></tr>';
                 $i = 0;
                     
                     $color_by_leaf_id = array();
@@ -1002,12 +1002,44 @@ foreach($all_boxes as $box_num => $total_in_box){
 </style>
 <?php
 
-echo '<br/><br/> AVG PER BOX PER LEAF: ',array_sum($all_boxes)/(count($found_boxes) - 1 + $additional_boxes)/$number_of_leafs,' +/- ',stndev($std_div_by_leaf),
-     ' <em>(this only counts boxes that have tricomes in them)</em><br/>';
+echo '<br/><span><strong>Heat Map:</strong></span><br/>';
 ?>
-<canvas id="myCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas>
-<?php
-    echo "<hr/><form method='post' action='",htmlentities($_SERVER['PHP_SELF']),"'>",$color_key,"<br/>","<input type='hidden' name='show_bar_graph' value='$_POST[show_bar_graph]' />",
+<canvas id="myCanvas" width="<?php echo $image_x; ?>" height="<?php echo $image_y; ?>"></canvas><br/>
+<?php 
+    echo '<table border="1">
+            <thead>
+                <tr>
+                    <th colspan="2">Leaf Density Calcuations</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Density:</th>',
+                    '<td align="right">',
+                            array_sum($all_boxes)/(count($found_boxes) - 1 + $additional_boxes)/$number_of_leafs,
+                    '</td>',
+                '</tr><tr>',
+                    '<td>',
+                        'Standard Deviation',
+                    '</td>',
+                     '<td align="right">',
+                            ' +/- ',
+                            stndev($std_div_by_leaf),
+                    '</td>',
+                '</tr>
+            </tbody>
+          </table>',
+          "<b>Leaf Density Adjustments:</b><br/>",
+          "&nbsp; &nbsp; &nbsp;Add <input type='number' name='additional_boxes' min='0' max='",
+                                $_POST['num_boxes_x']*$_POST['num_boxes_y'],"' step='1' value='0'> Empty Boxes";?>
+          <span style="vertical-align: text-top; font-size: .75em;">
+              <a href='densityinfo.html' onClick="window.open('./densityinfo.html','','width=420, height=550, left=200, top=200, screenX=200, screenY=200');return false;">
+                  ?
+              </a>
+          </span>
+<br/>
+
+<?php echo "<hr/><form method='post' action='",htmlentities($_SERVER['PHP_SELF']),"'>",$color_key,"<br/>","<input type='hidden' name='show_bar_graph' value='$_POST[show_bar_graph]' />",
             "<input type='hidden' name='bar_range' value='$_POST[bar_range]' />",
             "<input type='hidden' name='num_boxes_x' value='$_POST[num_boxes_x]' />",
             "<input type='hidden' name='num_boxes_y' value='$_POST[num_boxes_y]' />",
@@ -1019,8 +1051,7 @@ echo '<br/><br/> AVG PER BOX PER LEAF: ',array_sum($all_boxes)/(count($found_box
             "<input type='hidden' name='tricomes' value='$_POST[tricomes]' />",
             "<input type='hidden' name='nn_bar_range' value='$_POST[nn_bar_range]' />",
             "<input type='hidden' name='nn_graph_bin_size' value='$_POST[nn_graph_bin_size]' />",
-            "Add <input type='number' name='additional_boxes' min='0' max='",$_POST['num_boxes_x']*$_POST['num_boxes_y'],"' step='1' value='0'> Empty Boxes <br/>",
-            "<button type='submit'>ReAnalayze</button></form>";
+            "<br/><br/><button type='submit'>ReAnalayze</button></form>";
     ?>
 <br/>
     <div id="chart_div"></div>

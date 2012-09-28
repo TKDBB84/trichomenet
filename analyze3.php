@@ -41,7 +41,7 @@ if (count($result) > 0) {
         $genotypes[$row['genotype_id']] = $row['genotype'];
     }
 } else {
-    $genotypes[0] = "No Genotypes";
+    $genotypes[0] = "No Categories";
 }
 
 if ($active_geno !== -1) {
@@ -83,7 +83,7 @@ $has_cords = ($result2 !== false);
         <LINK href="./css/trichomenet.css" rel="stylesheet" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
         <script type="text/javascript">
             document.addEventListener("DOMContentLoaded", function(){
             <?php
@@ -222,20 +222,20 @@ $has_cords = ($result2 !== false);
                     switch(arg){
                         case "no_genotypes":
                             e.innerHTML = '<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+
-                                          'You Must Add The Genotypes You Are Working With'+
+                                          'You Must Add The Categories You Are Working With'+
                                           'Before You Can Use Any Other Pages!</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
-                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Category Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
                             break;
                         case "no_active_type":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Activated A Genotype<b/><br/><br/>'+
-                                          'You Must Activate A Genotype To Working With'+
+                            e.innerHTML = '<div><p><b>It Appears You Have Not Activated A Category<b/><br/><br/>'+
+                                          'You Must Activate A Category To Working With'+
                                           'Before You Can Use Any Other Pages!</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
-                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Category Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
                             break;
                         case "no_leafs":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Leaves To This Genotype<b/><br/><br/>'+
+                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Leaves To This Category<b/><br/><br/>'+
                                           'You Cannot Analyze Leaves Without First Adding Them</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
                                           'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
@@ -269,40 +269,43 @@ $has_cords = ($result2 !== false);
             </div>
         </div>
         <div class="sidebar">
-            <span>Step 1: Define Genotypes</span>
-            <br/><br/>
-            <span>Step 2: Upload Leaf Images</span>
-            <br/><br/>
-            <span>Step 3: Detect Trichomes</span>
-            <br/><br/>
-            <span>Step 4: Conduct Analyses</span>
-            <br/><br/>
-            <span style="position: absolute; bottom: 0; right: 0;">
-                If you have any problems with the software, 
-                please leave any issues at: 
-                <a href="https://github.com/TKDBB84/trichomenet">
-                    TrichomeNet On Github
-                </a>
+                <span>Step 1: Define Categories</span>
                 <br/><br/>
-            </span>
-        </div>
+                <span>Step 2: Upload Images/Mark Trichomes</span>
+                <br/><br/>
+                <span>Step 3: Analyze</span>
+                <br/><br/>
+                <span style="position: absolute; bottom: 0; right: 0;">
+                    If you have any problems with the software, 
+                      please leave any issues at: 
+                      <a href="https://github.com/TKDBB84/trichomenet">
+                        TRICHOMENET On Github
+                      </a>
+                      <br/><br/>
+                </span>
+            </div>
         <div class="contents">
             <div id="contents_header">
-                <b>3 - Trichome Positional Analysis:</b>
+                <b>3 - Analyze: Trichome Positional Analysis</b>
             </div>
-            <div id="main_contents">
-                Select leaves and options for positional analysis. Grouping of multiple leaves is currently limited to leaves within a genotype.
+            <div id="main_contents"><br/>
+                Select leaves and options for positional analysis. Only leafs in the active category may be analyzed. To analyze other categories you must activate them at <a href="./addGenotypes.php">Step 1</a>.
                 <div id="framed">
                     <div id="main"><form action="alignpoints3.php" method="post" onSubmit="return loop_select();">
                             <input type="hidden" name="genotype_id" value="<?php echo $genotype_id; ?>"/>
                             <table rules="groups">
                                 <thead>
                                     <tr>
+                                        <th colspan="6">Leaf Selection</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
                                         <td></td>
                                         <td></td>
-                                        <td><strong>Select Leafs To Include:</strong></td>
+                                        <td><strong>Available Leaves:</strong></td>
                                         <td></td>
-                                        <td><strong>Selected Leafs:</strong></td>
+                                        <td><strong>Selected Leaves:</strong></td>
                                         <td>
                                         </td>
                                     </tr>
@@ -330,14 +333,19 @@ $has_cords = ($result2 !== false);
 
                                         </td>
                                     </tr>
+                                </tbody>
+                                <thead>
+                                    <tr>
+                                        <th colspan="6"><br/><br/>Analysis Options<td>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>
                                             <strong>General</strong>
                                         </td>
-                                        <td>
-                                            Count Outer Trichomes:<br/>
+                                        <td colspan="6">
+                                            Include Marginal Trichomes In Analysis:<br/>
                                             <input type="radio" name="count_outer" value="1" onClick="document.getElementById('edge2').checked = true;document.getElementById('edge1').disabled = true;document.getElementById('edge2').disabled = true;" <?php if (isset($_SESSION['outline']) && $_SESSION['outline'] == 1) echo 'checked'; ?>> Yes<br/>
                                             <input type="radio" name="count_outer" value="0" onClick="document.getElementById('edge1').disabled = false;document.getElementById('edge2').disabled = false;" <?php if (!isset($_SESSION['count_outer']) || (isset($_SESSION['count_outer']) && $_SESSION['count_outer'] == 0)) echo 'checked'; ?>> No
                                         </td>
@@ -349,58 +357,77 @@ $has_cords = ($result2 !== false);
                                             <strong>Heat Map</strong>
                                         </td>
                                         <td>
-                                            Show Box Outlines: <br/>
+                                            Show Gird Lines: <br/>
                                             <input type="radio" name="outline" value="1" <?php if (isset($_SESSION['outline']) && $_SESSION['outline'] == 1) echo 'checked'; ?>> Yes<br/>
                                             <input type="radio" name="outline" value="0" <?php if (!isset($_SESSION['outline']) || (isset($_SESSION['outline']) && $_SESSION['outline'] == 0)) echo 'checked'; ?>> No
                                         </td>
                                         <td>
-                                            Show Trichomes: <br/>
+                                            Show Trichome Points: <br/>
                                             <input type="radio" name="tricomes" value="1" <?php if (!isset($_SESSION['tricomes']) || (isset($_SESSION['tricomes']) && $_SESSION['tricomes'] == 1)) echo 'checked'; ?>> Yes<br/>
                                             <input type="radio" name="tricomes" value="0" <?php if (isset($_SESSION['tricomes']) && $_SESSION['tricomes'] == 0) echo 'checked'; ?>> No
                                         </td>
                                         <td>
-                                            Show Leaf Edge: <br/>
+                                            Show Leaf Outline: <br/>
                                             <input type="radio" name="edge" value="1" id="edge1" <?php if (!isset($_SESSION['edge']) || (isset($_SESSION['edge']) && $_SESSION['edge'] == 1)) echo 'checked'; ?>> Yes<br/>
                                             <input type="radio" name="edge" value="0" id="edge2" <?php if (isset($_SESSION['edge']) && $_SESSION['edge'] == 0) echo 'checked'; ?>> No
                                         </td>
                                         <td>
-                                            Num Boxes:<br/>
+                                            Grid Size:<br/>
                                             X-Axis: <input type="number" name="num_boxes_x" min="1" max="24" step="1" value="<?php if (isset($_SESSION['num_boxes_x']) && $_SESSION['num_boxes_x'] != 0) echo $_SESSION['num_boxes_x']; else echo '16'; ?>"/><br/>
                                             Y-Axis: <input type="number" name="num_boxes_y" min="1" max="24" step="1" value="<?php if (isset($_SESSION['num_boxes_y']) && $_SESSION['num_boxes_y'] != 0) echo $_SESSION['num_boxes_y']; else echo '16'; ?>"/>
                                         </td>
                                         <td>
-                                            Show Values:<br/>
+                                            Show Local Density Values:<br/>
                                             <input type="radio" name="show_values" value="1" <?php if (!isset($_SESSION['show_values']) || (isset($_SESSION['show_values']) && $_SESSION['show_values'] == 1)) echo 'checked'; ?>> Yes<br/>
                                             <input type="radio" name="show_values" value="0" <?php if (isset($_SESSION['show_values']) && $_SESSION['show_values'] == 0) echo 'checked'; ?>> No
                                         </td>    
                                     </tr>
                                 </tbody>
+                                <thead>
+                                    <tr>
+                                        <th colspan="6">
+                                            <br/>
+                                            Distances Analysis:
+                                        </th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     <tr>
-                                        <td>
-                                            <strong>Distances:</strong>
-                                        </td>
-                                        <td>
-                                            Show Distance Averages:<br/>
+                                        <th>
+                                            All Trichome Distances:
+                                        </th>
+                                        <td colspan="2">
+                                            Show DistanceGraphs:<br/>
                                             <input type="radio" name="show_bar_graph" value="1" <?php if (!isset($_SESSION['show_bar_graph']) || (isset($_SESSION['show_bar_graph']) && $_SESSION['show_bar_graph'] == 1)) echo 'checked'; ?>> Yes<br/>
                                             <input type="radio" name="show_bar_graph" value="0" <?php if (isset($_SESSION['show_bar_graph']) && $_SESSION['show_bar_graph'] == 0) echo 'checked'; ?>> No
                                         </td>
                                         <td>
-                                            Range of Distances:<br/>
+                                            Distance Range:<br/>
                                             0 to <input type="number" name="bar_range" min="1000" max="5000" step="100" value="<?php if (isset($_SESSION['bar_range']) && $_SESSION['bar_range'] != 0) echo $_SESSION['bar_range']; else echo '2000'; ?>"/>
                                         </td>
                                         <td>
                                             Distance Bin Size: <br/>
                                             <input type="number" name="graph_bin_size" min="10" max="1000" step="5" value="<?php if (isset($_SESSION['graph_bin_size']) && $_SESSION['graph_bin_size'] != 0) echo $_SESSION['graph_bin_size']; else echo '100'; ?>"/>
                                         </td>
+                                        <td/>
+                                    </tr>
+                                </tbody>
+                                <tbody>
+                                    <tr>
+                                        <th>
+                                            Next Neighbor Distances:
+                                        </th>
                                         <td>
-                                            Range of Next Neighbor Distances:<br/>
+                                            Distance Range:<br/>
                                             0 to <input type="number" name="nn_bar_range" min="100" max="500" step="10" value="<?php if (isset($_SESSION['nn_bar_range']) && $_SESSION['nn_bar_range'] != 0) echo $_SESSION['nn_bar_range']; else echo '200'; ?>"/>
                                         </td>
                                         <td>
-                                            Next Neighbor Distance Bin Size: <br/>
+                                            Distance Bin Size: <br/>
                                             <input type="number" name="nn_graph_bin_size" min="1" max="100" step="1" value="<?php if (isset($_SESSION['nn_graph_bin_size']) && $_SESSION['nn_graph_bin_size'] != 0) echo $_SESSION['nn_graph_bin_size']; else echo '10'; ?>"/>
                                         </td>
+                                        <td/>
+                                        <td/>
+                                        <td/>
                                     </tr>
                                 </tbody>
                                     <tr>

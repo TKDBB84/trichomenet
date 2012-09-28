@@ -64,7 +64,7 @@ $stmt_get_leaf_cords->closeCursor();
         <LINK href="./css/trichomenet.css" rel="stylesheet" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"> </script> 
 <script type="text/javascript">
 
@@ -540,11 +540,11 @@ $stmt_get_leaf_cords->closeCursor();
                                           '<p>Choose `inner` from the menu and click on all '+
                                           'the laminal trichomes. Order is not important.</p>'+
                                           '<p>Alternatively, you may choose to use the auto '+
-                                          'detect trichome function by choosing a sensitivity '+
+                                          'mark trichome function by choosing a sensitivity '+
                                           'level and clicking [Find Trichomes]. This will clear '+
                                           'any laminal trichomes you have chosen but will leave '+
                                           'marginal and leaf tip selections intact.</p>'+
-                                          '<p>Once automatic detection has finished, you may '+
+                                          '<p>Once automatic marking has finished, you may '+
                                           'choose to add or remove trichome marks automatically '+
                                           'before saving your work.</p>'+
                                           '<button type="button" onClick="overlay();">OK</button></div>';
@@ -553,7 +553,7 @@ $stmt_get_leaf_cords->closeCursor();
                             e.innerHTML = '<div><p><b>Congratulations<b/><br/><br/>'+
                                           '<p>You have marked the trichomes in your first '+
                                           'leaf. Feel free to experiment using combinations '+
-                                          'of automatic &amp; manual trichome detection at '+
+                                          'of automatic &amp; manual trichome marking at '+
                                           'different sensitivities to see what works best '+
                                           'for your workflow.</p><p>Be sure to save your work '+
                                           'by clicking the [save] button at the bottom of the page <p>'+
@@ -596,19 +596,17 @@ $stmt_get_leaf_cords->closeCursor();
 
         <!--<div style="height:100%; width: 100%; position: relative;">-->
         <div class="sidebar">
-            <span>Step 1: Define Genotypes</span>
+            <span>Step 1: Define Categories</span>
                 <br/><br/>
-                <span>Step 2: Upload Leaf Images</span>
+                <span>Step 2: Upload Images/Mark Trichomes</span>
                 <br/><br/>
-                <span>Step 3: Detect Trichomes</span>
-                <br/><br/>
-                <span>Step 4: Conduct Analyses</span>
+                <span>Step 3: Analyze</span>
                 <br/><br/>
                 <span style="position: absolute; bottom: 0; right: 0;">
                     If you have any problems with the software, 
                       please leave any issues at: 
                       <a href="https://github.com/TKDBB84/trichomenet">
-                        TrichomeNet On Github
+                        TRICHOMENET On Github
                       </a>
                       <br/><br/>
                 </span>
@@ -633,18 +631,25 @@ $stmt_get_leaf_cords->closeCursor();
                     }
                     ?>
                     <div id="settings">
-                    Set Sensitivity:<br/>
-                        <input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>
+                    Automatic Marking Sensitivity:<br/>
+                        -<input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>+
                         <input  id="txt" type="text" value="150" size="3" readonly/>
-                        <button onClick="getAutoCords(document.getElementById('txt').value)">Find Tricomes</button>
+                        <button onClick="getAutoCords(document.getElementById('txt').value)">Auto Mark Trichomes</button>
+                        <span style="vertical-align: text-top; font-size: .75em;">
+                            <a href="./fijiinfo.html" onclick="window.open('./fijiinfo.html','','width=375, height=350, left=200, top=200, screenX=200, screenY=200');return false;">
+                                ?
+                            </a>
+                        </span>
                         <br/>
                         <div id="tip_div" style="width: 125px;"><input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/><label id="lbltip" for="tip">Mark Leaf Tip</label></div>
-                        <div id="outter_div" style="width: 125px;"><input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>><label id="lbloutter" for="outter">Outer</label></div>
-                        <div id="inner_div" style="width: 125px;"><input type="radio" id="inner" name="type" onclick='unCheckDelete();'><label id="lblinner" for="inner">Inner</label></div>
+                        <div id="outter_div" style="width: 125px;"><input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>><label id="lbloutter" for="outter">Marginal</label></div>
+                        <div id="inner_div" style="width: 125px;"><input type="radio" id="inner" name="type" onclick='unCheckDelete();'><label id="lblinner" for="inner">Laminal</label></div>
                         <div id="del_div" style="width: 125px;"><input type="checkbox" id='del' onclick='unSelectRadio();'/><label id="lbldel" for="del">Delete</label></div>
                         <button onclick="clearmything(false);">Clear</button>
                         <button onclick="saveIt();">Save</button>
                         <div id="csv"></div>
+                        <em>If leaf image appears too large, you may zoom out your browser to fit better.</em>
+                        <br/><br/><br/><br/><a href="./addLeafs.php">Return To Leaf List</a>
                     </div>
                 </div>
             </div>

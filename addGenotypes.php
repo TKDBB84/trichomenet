@@ -60,7 +60,7 @@ if (count($results) > 0) {
         <LINK href="./css/trichomenet.css" rel="stylesheet" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
-        <title>TrichomeNet</title>
+        <title>TRICHOMENET</title>
         <script type="text/javascript">
             <?php if(isset($active_geno) && $active_geno !== -1){
                 echo 'document.addEventListener("DOMContentLoaded", function()
@@ -176,43 +176,43 @@ if (count($results) > 0) {
 
         <!--<div style="height:100%; width: 100%; position: relative;">-->
             <div class="sidebar">
-                <span>Step 1: Define Genotypes</span>
+                <span>Step 1: Define Categories</span>
                 <br/><br/>
-                <span>Step 2: Upload Leaf Images</span>
+                <span>Step 2: Upload Images/Mark Trichomes</span>
                 <br/><br/>
-                <span>Step 3: Detect Trichomes</span>
-                <br/><br/>
-                <span>Step 4: Conduct Analyses</span>
+                <span>Step 3: Analyze</span>
                 <br/><br/>
                 <span style="position: absolute; bottom: 0; right: 0;">
                     If you have any problems with the software, 
                       please leave any issues at: 
                       <a href="https://github.com/TKDBB84/trichomenet">
-                        TrichomeNet On Github
+                        TRICHOMENET On Github
                       </a>
                       <br/><br/>
                 </span>
             </div>
             <div class="contents">
                 <div id="contents_header">
-                    <b>1 - Define Genotypes/Catagories</b>
+                    <b>1 - Define Categories</b>
                 </div>
                 <div id="main_contents">
                     <p>
-                        To get started using TRICHOMENET, you must first define the experimental categories under which you will be saving leaf pictures. These can be different plant genotypes, but can also be used to define other differences such as treatments or plant ages.
+                        To get started using TRICHOMENET, you must first define the experimental categories under which you will be saving leaf pictures.
+                        These categories act as folders to organize your data, and can be any variable such as: genotypes, experimental treatments, developmental stages, etc...
+                        <!--These can be different plant genotypes, but can also be used to define other differences such as treatments or plant ages.-->
                     </p>
                     <form action="./addGenotypes.php" method="POST">
                         <div id="framed">
                             <div style="float: right; margin-right: 50px;">
                                 <p>
-                                    <strong>Setting a genotype as active will make it available for editing and analysis in TrichomeNet.<br/><br/>
-                                        Only one genotype may be active at a time.</strong>
+                                    <strong>Setting a category as active will make it available for editing and analysis in TRICHOMENET.<br/><br/>
+                                        Only one category may be active at a time.</strong>
                                 </p>
                             </div>
                             <div id="genotypes" style="padding-left: 20px;">
                                 <table id="geno_table" border="1">
                                     <tr>
-                                        <th colspan="3">Genotype</th>
+                                        <th colspan="3">Categories</th>
                                     </tr>
                                     <?php
                                     if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
@@ -240,7 +240,7 @@ if (count($results) > 0) {
                                     </tr>
                                 </table>
                             </div>
-                        
+                        <!--bottom right, link when read to next step fro every page-->
                         </div>
                     </form>
                 </div>
@@ -255,9 +255,9 @@ if (count($results) > 0) {
    
 <div id="overlay">
      <div>
-           <p><b>It Appears You Have No Genotypes<b/><br/><br/>
-           You Must Add The Genotypes You Are Working With
+           <p><b>It Appears You Have No Categories<b/><br/><br/>
+           You Must Add The Catagories You Are Working With
            Before You Can Use Any Other Pages!</p>
-           <button type="button">Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick='overlay()'>Ignore</button>
+           <button type="button">Take Me To Categories Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick='overlay()'>Ignore</button>
      </div></div>
 </html>

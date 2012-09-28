@@ -1,26 +1,26 @@
-# TrichomeNet
+# TRICHOMENET
 
-Description: Trichomenet is an trichome pattern analysis tool designed to work in conjuction with polarized light microscopy images of cleared leaves. The software can detect and analyze trichome positions including density heat map and next neighbor analyses.
+Description: TRICHOMENET is an trichome pattern analysis tool designed to work in conjuction with polarized light microscopy images of cleared leaves. The software can detect and analyze trichome positions including density heat map and next neighbor analyses.
 
-## TrichomeNet Setup
+## TRICHOMENET Setup
 
 Basic Information And Prerequists
 
-1. TrichomeNet is developed for use with PHP 5.3+, and tested with MySQL, however other SQL database systems with PHP 5.3+ connectivity should work as well.
-2. TrichomeNet also requires the GD libraries for PHP.
-3. TrichomeNet additionally requires FIJI ( http://fiji.sc/ ) to utilize the ImageJ detection.
+1. TRICHOMENET is developed for use with PHP 5.3+, and tested with MySQL, however other SQL database systems with PHP 5.3+ connectivity should work as well.
+2. TRICHOMENET also requires the GD libraries for PHP.
+3. TRICHOMENET additionally requires FIJI ( http://fiji.sc/ ) to utilize the ImageJ detection.
 4. A setup script is currenly not included in the repository but is planned to be developed at a later date.
-5. The settings.ini file contains all database connectivity information as well as path information for TrichomeNet.
+5. The settings.ini file contains all database connectivity information as well as path information for TRICHOMENET.
 
 ## Deploying
 
 ### How to setup the deployment environment
 
-- TrichomeNet was developed and test in both an Ubuntu Server Enviroment(x86), as well as a Fedora Desktop Enviroment(x64).  It should however function in any *nix based enviroment providing the above Prerequists are met, and a bash (or some other sh) shell is available to the web user.
+- TRICHOMENET was developed and test in both an Ubuntu Server Enviroment(x86), as well as a Fedora Desktop Enviroment(x64).  It should however function in any *nix based enviroment providing the above Prerequists are met, and a bash (or some other sh) shell is available to the web user.
 - Be sure to note the plugin directory for FIJI ( http://fiji.sc/ )
 - The web user, (usally www-data) requires read/write access to the fiji plugin folder (on ubuntu: /usr/lib/fiji/plugins ) to create the plugin that detects the cords, as well as read/write access to the temporary dirtory to store the output (usally /tmp).
-- In your database create a database & user for trichomenet, in this repository is (dbsetup.sql), execute this sql file in the new database to setup the tables required for new use
-- Extract TrichomeNet to web root, or link TrichomeNet to the web root.
+- In your database create a database & user for TRICHOMENET, in this repository is (dbsetup.sql), execute this sql file in the new database to setup the tables required for new use
+- Extract TRICHOMENET to web root, or link TRICHOMENET to the web root.
 - Set your database connection info, Heat Map Color and Tolerances, as well as the path information for FIJI and www-data shell, and location of images (defaults are relative paths) in the settings.ini file.
 
 
