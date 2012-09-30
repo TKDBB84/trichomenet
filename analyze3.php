@@ -292,7 +292,6 @@ $has_cords = ($result2 !== false);
                 Select leaves and options for positional analysis. Only leafs in the active category may be analyzed. To analyze other categories you must activate them at <a href="./addGenotypes.php">Step 1</a>.
                 <div id="framed">
                     <div id="main"><form action="alignpoints3.php" method="post" onSubmit="return loop_select();">
-                            <input type="hidden" name="genotype_id" value="<?php echo $genotype_id; ?>"/>
                             <table rules="groups">
                                 <thead>
                                     <tr>

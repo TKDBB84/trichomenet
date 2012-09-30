@@ -262,8 +262,6 @@ $sql_get_distances = $pdo_dbh->prepare("SELECT distance,leaf_id FROM `:dist_tabl
 $sql_get_distances->bindParam(':dist_table', $temp_dist_table, PDO::PARAM_STR);
 $sql_get_distances->execute()  or die($sql_get_distances->queryString.'lala<br/><br/>'.var_dump($sql_get_distances->errorInfo()));
 
-$num_dists = array();
-$all_dist = array();
 $bins_per_leaf = array();
 $Bins = array();
 
@@ -300,16 +298,16 @@ $Bins = array();
                 
             }
         }
-        if(!isset($all_dist[$row['leaf_id']])) $all_dist[$row['leaf_id']] = 0;
-        $all_dist[$row['leaf_id']] += $distance;
-        if(!isset($num_dists[$row['leaf_id']])) $num_dists[$row['leaf_id']] = 0;
-        $num_dists[$row['leaf_id']]++;
     }
-$sql_cross_join_both_temp_tables->closeCursor();
-$all_leaf_avg = 0;
-foreach($leaf_ids as $leaf_id){
-    $all_leaf_avg += $all_dist[$leaf_id] / $num_dists[$leaf_id];
     
+
+    
+$sql_cross_join_both_temp_tables->closeCursor();
+
+foreach($leaf_ids as $leaf_id){
+    foreach($bins_per_leaf[$leaf_id] as &$num_in_Bin){
+        $num_in_Bin /= 2;
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -320,8 +318,7 @@ foreach($leaf_ids as $leaf_id){
 
 //~~~~~~~~~~~~~~~~~~GET NEXT NEIGHBOR DISTANCES AND BIN THEM~~~~~~~~~~~~~~~~~~~~
 $next_neighbor_distances_bins = array();
-$all_next_neighbor_dist = array();
-$num_next_neighbor_dists = array();
+
 $sql_get_nnd_from_dist_table_by_leaf_id = $pdo_dbh->prepare('SELECT min(distance) as dist FROM `:dist_table` WHERE leaf_id = :leaf_id group by x1,y1');
 $sql_get_nnd_from_dist_table_by_leaf_id->bindParam(':dist_table',$temp_dist_table,PDO::PARAM_STR);
 $sql_get_nnd_from_dist_table_by_leaf_id->bindParam(':leaf_id',$leaf_id,PDO::PARAM_INT);
@@ -352,14 +349,17 @@ foreach($leaf_ids as $leaf_id){
                 
             }
         }
-        if(!isset($all_next_neighbor_dist[$leaf_id])) $all_next_neighbor_dist[$leaf_id] = 0;
-        $all_next_neighbor_dist[$leaf_id] += $distance;
-        if(!isset($num_next_neighbor_dists[$leaf_id])) $num_next_neighbor_dists[$leaf_id] = 0;
-        $num_next_neighbor_dists[$leaf_id]++;
     }
 }
 $sql_drop_temp_table->bindParam(':temp_table', $temp_dist_table, PDO::PARAM_STR);
 $sql_drop_temp_table->execute() or die($sql_drop_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_drop_temp_table->errorInfo()));
+
+foreach($leaf_ids as $leaf_id){
+    foreach($next_neighbor_distances_bins[$leaf_id] as &$num_in_Bin){
+        $num_in_Bin /= 2;
+    }
+}
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
