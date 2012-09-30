@@ -354,12 +354,6 @@ foreach($leaf_ids as $leaf_id){
 $sql_drop_temp_table->bindParam(':temp_table', $temp_dist_table, PDO::PARAM_STR);
 $sql_drop_temp_table->execute() or die($sql_drop_temp_table->queryString.'lala<br/><br/>'.var_dump($sql_drop_temp_table->errorInfo()));
 
-foreach($leaf_ids as $leaf_id){
-    foreach($next_neighbor_distances_bins[$leaf_id] as &$num_in_Bin){
-        $num_in_Bin /= 2;
-    }
-}
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
