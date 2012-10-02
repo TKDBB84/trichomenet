@@ -29,6 +29,16 @@ if (!isset($_SESSION['active_geno'])) {
     $active_geno = $_SESSION['active_geno'];
 }
 
+$ini_settings = parse_ini_file('./settings.ini',true);
+$HEAT_MAP_COLORS = $ini_settings['HeatMap']['HeatMap_Colors'];
+
+if(!isset($_SESSION['HEAT_MAP_VALUES'])){
+    $HEAT_MAP_VALUES = $ini_settings['HeatMap']['HeatMap_MaxValue'];
+    $_SESSION['HEAT_MAP_VALUES'] = $HEAT_MAP_VALUES;
+}else{
+    $HEAT_MAP_VALUES = $_SESSION['HEAT_MAP_VALUES'];
+}
+
 
 $genotypes = array();
 $stmt_get_genotypes = $pdo_dbh->prepare('SELECT genotype_id,genotype FROM genotypes WHERE `owner_id` = :user_id');
@@ -199,12 +209,68 @@ $has_cords = ($result2 !== false);
               return;
           }
 
+          function isNumeric(n) {
+            return !isNaN(parseFloat(n)) && isFinite(n);
+          }
+
+
           function loop_select() {
               var select_box = document.getElementById('selected');
               if(select_box.options.length < 2){
                   alert('You Must Select At Least 2 Leaves');
                   return false;
               }
+              
+              for(var i = 0 ; i < <?php echo count($HEAT_MAP_VALUES); ?> ; i++){
+                  var id_str = 'heat_val_';
+                  var id = id_str + i;
+                  var n = document.getElementById(id).value;
+                  if(!isNumeric(n)){
+                      alert('Hat Map Color Values Must Be Numbers');
+                      return false;
+                  }else{
+                      if(i !== 0){
+                          var m1_id = id_str + (i-1);
+                          var n_m1 = parseFloat(document.getElementById(m1_id).value);
+                          n = parseFloat(n);
+                          if(n < n_m1){
+                              alert('Heat Map Color Values Must Be Ascending');
+                              return false;
+                          }
+                      }
+                  }
+              }
+              
+             var num_inputs = new Array("boxes_1","boxes_2","bar_range","graph_bin_size","nn_bar_range","nn_graph_bin_size") 
+             for(var i = 0 ; i < num_inputs.length ; i++){
+                if(!isNumeric(document.getElementById(num_inputs[i]).value)){
+                    var error;
+                    switch(num_inputs[i]){
+                        case "boxes_1":
+                            error = 'Heat Map Grid Size For X-Axis ';
+                            break;
+                        case "boxes_2":
+                            error = 'Heat Map Grid Size For Y-Axis ';
+                            break;
+                        case "bar_range":
+                            error = 'All Trichomes Distance Range ';
+                            break;
+                        case "graph_bin_size":
+                            error = 'All Trichomes Distance Bin Size ';
+                            break;
+                        case "nn_bar_range":
+                            error = 'Next Neighbor Distance Range ';
+                            break;
+                        case "nn_graph_bin_size":
+                            error = 'Next Neighbor Distance Bin Size ';
+                            break;
+                    }
+                    error = error + 'Must Be Numeric';
+                    alert(error);
+                    return false;
+                }
+             }
+              
               for(i=0;i<=select_box.options.length-1;i++)
                   select_box.options[i].selected = true;
               var select_box = document.getElementById('fl');
@@ -212,7 +278,41 @@ $has_cords = ($result2 !== false);
                   select_box.options[i].selected = false;
               return true;
           }
-
+          
+          function update_val(num){
+              var id_str = 'heat_val_';
+              var id = id_str + '0';
+              var e = document.getElementById(id);
+              e.min = 0;
+              var id_p1 = id_str + '1';
+              var e_p1 = document.getElementById(id_p1);
+              var val = Math.round(+e*10)/10;
+              e_p1.min = (val);
+              val = Math.round((+e_p1.value*10))/10;
+              e.max = Math.round((+val)*10)/10;
+              var id_m1;
+              var e_m1;
+              for(var i = 1 ; i < <?php echo count($HEAT_MAP_VALUES)-1; ?> ; i++){
+                      id = id_str + i;
+                      id_m1 = id_str + (i-1);
+                      id_p1 = id_str + (i+1);
+                      e = document.getElementById(id);
+                      e_m1 = document.getElementById(id_m1);
+                      e_p1 = document.getElementById(id_p1);
+                      val = Math.round(+e.value*10)/10;
+                      e_p1.min = Math.round((+val)*10)/10;
+                      e_m1.max = Math.round((+val)*10)/10;
+              }
+              id = id_str + '<?php echo count($HEAT_MAP_VALUES)-1; ?>';
+              id_m1 = id_str + '<?php echo count($HEAT_MAP_VALUES)-2; ?>';
+              e = document.getElementById(id);
+              e.max = 99;
+              e_m1 = document.getElementById(id_m1);
+              val = Math.round(+e*10)/10;
+              e_m1.max = Math.round((+val)*10)/10;
+          }
+          
+          
           function overlay(arg){
                 var e = document.getElementById("overlay");
                 if(e.style.visibility == "visible"){
@@ -372,8 +472,8 @@ $has_cords = ($result2 !== false);
                                         </td>
                                         <td>
                                             Grid Size:<br/>
-                                            X-Axis: <input type="number" name="num_boxes_x" min="1" max="24" step="1" value="<?php if (isset($_SESSION['num_boxes_x']) && $_SESSION['num_boxes_x'] != 0) echo $_SESSION['num_boxes_x']; else echo '16'; ?>"/><br/>
-                                            Y-Axis: <input type="number" name="num_boxes_y" min="1" max="24" step="1" value="<?php if (isset($_SESSION['num_boxes_y']) && $_SESSION['num_boxes_y'] != 0) echo $_SESSION['num_boxes_y']; else echo '16'; ?>"/>
+                                            X-Axis: <input type="number" id="boxes_1" name="num_boxes_x" min="1" max="24" step="1" value="<?php if (isset($_SESSION['num_boxes_x']) && $_SESSION['num_boxes_x'] != 0) echo $_SESSION['num_boxes_x']; else echo '16'; ?>"/><br/>
+                                            Y-Axis: <input type="number" id="boxes_2" name="num_boxes_y" min="1" max="24" step="1" value="<?php if (isset($_SESSION['num_boxes_y']) && $_SESSION['num_boxes_y'] != 0) echo $_SESSION['num_boxes_y']; else echo '16'; ?>"/>
                                         </td>
                                         <td>
                                             Show Local Density Values:<br/>
@@ -382,6 +482,42 @@ $has_cords = ($result2 !== false);
                                         </td>    
                                     </tr>
                                 </tbody>
+                            </table>
+                            <table border="1" frame="ABOVE">
+                                <tbody>
+                                    <tr>
+                                        <td rowspan="2">
+                                            <strong>Heat Map Colors</strong>
+                                        </td>
+                                        <?php
+                                        //$HEAT_MAP_COLORS
+                                        //$HEAT_MAP_VALUES
+                                            //echo '<td align="center">0</td>';
+                                            echo '<td align="center">&lt;<input type="number" name="HEAT_MAP_RANGES[0]" id="heat_val_0" value="',$HEAT_MAP_VALUES[0],'"max="',$HEAT_MAP_VALUES[1],'" min="0" step="0.1" style="width: 40px;" onClick="update_val(0);"/></td>';
+                                            $NUM_VALUES = count($HEAT_MAP_VALUES);
+                                            for($i = 1 ; $i < ($NUM_VALUES-1) ; $i++){
+                                                $min_value = $HEAT_MAP_VALUES[$i-1];
+                                                $value = $HEAT_MAP_VALUES[$i];
+                                                $max_value = $HEAT_MAP_VALUES[$i+1];
+                                                echo '<td align="center">&lt;<input type="number" name="HEAT_MAP_RANGES[',$i,']" id="heat_val_',$i,'" value="',$value,'"max="',$max_value,'" min="',$min_value,'" step="0.1" style="width: 40px;" onClick="update_val(',$i,');"/></td>';
+                                            }
+                                            echo '<td align="center">&lt;<input type="number" name="HEAT_MAP_RANGES[',$NUM_VALUES-1,']" id="heat_val_',$NUM_VALUES-1,'" value="',$HEAT_MAP_VALUES[$NUM_VALUES-1],'"max="99" min="',$HEAT_MAP_VALUES[$NUM_VALUES-2],'" step="0.1" style="width: 40px;" onClick="update_val(',$NUM_VALUES-1,');"/></td>';
+                                        ?>
+                                        <td>
+                                            ++
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                            <?php
+                                            
+                                            foreach($HEAT_MAP_COLORS as $color)
+                                                echo '<td align="center"><div style="border:1px solid; height: 15px; width: 15px; background-color: ',$color,';"/></td>';
+                                            ?>
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table rules="groups">
                                 <thead>
                                     <tr>
                                         <th colspan="6">
@@ -402,11 +538,11 @@ $has_cords = ($result2 !== false);
                                         </td>
                                         <td>
                                             Distance Range:<br/>
-                                            0 to <input type="number" name="bar_range" min="1000" max="5000" step="100" value="<?php if (isset($_SESSION['bar_range']) && $_SESSION['bar_range'] != 0) echo $_SESSION['bar_range']; else echo '2000'; ?>"/>
+                                            0 to <input type="number" id="bar_range" name="bar_range" min="1000" max="5000" step="100" value="<?php if (isset($_SESSION['bar_range']) && $_SESSION['bar_range'] != 0) echo $_SESSION['bar_range']; else echo '2000'; ?>"/>
                                         </td>
                                         <td>
                                             Distance Bin Size: <br/>
-                                            <input type="number" name="graph_bin_size" min="10" max="1000" step="5" value="<?php if (isset($_SESSION['graph_bin_size']) && $_SESSION['graph_bin_size'] != 0) echo $_SESSION['graph_bin_size']; else echo '100'; ?>"/>
+                                            <input type="number" id="graph_bin_size" name="graph_bin_size" min="10" max="1000" step="5" value="<?php if (isset($_SESSION['graph_bin_size']) && $_SESSION['graph_bin_size'] != 0) echo $_SESSION['graph_bin_size']; else echo '100'; ?>"/>
                                         </td>
                                         <td/>
                                     </tr>
@@ -418,11 +554,11 @@ $has_cords = ($result2 !== false);
                                         </th>
                                         <td>
                                             Distance Range:<br/>
-                                            0 to <input type="number" name="nn_bar_range" min="100" max="500" step="10" value="<?php if (isset($_SESSION['nn_bar_range']) && $_SESSION['nn_bar_range'] != 0) echo $_SESSION['nn_bar_range']; else echo '200'; ?>"/>
+                                            0 to <input type="number" id="nn_bar_range" name="nn_bar_range" min="100" max="500" step="10" value="<?php if (isset($_SESSION['nn_bar_range']) && $_SESSION['nn_bar_range'] != 0) echo $_SESSION['nn_bar_range']; else echo '200'; ?>"/>
                                         </td>
                                         <td>
                                             Distance Bin Size: <br/>
-                                            <input type="number" name="nn_graph_bin_size" min="1" max="100" step="1" value="<?php if (isset($_SESSION['nn_graph_bin_size']) && $_SESSION['nn_graph_bin_size'] != 0) echo $_SESSION['nn_graph_bin_size']; else echo '10'; ?>"/>
+                                            <input type="number" id="nn_graph_bin_size" name="nn_graph_bin_size" min="1" max="100" step="1" value="<?php if (isset($_SESSION['nn_graph_bin_size']) && $_SESSION['nn_graph_bin_size'] != 0) echo $_SESSION['nn_graph_bin_size']; else echo '10'; ?>"/>
                                         </td>
                                         <td/>
                                         <td/>

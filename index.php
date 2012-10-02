@@ -42,7 +42,7 @@ if(!isset($_SESSION))    session_start();
                     For more detailed descriptions and protocols, see our publication (Details of paper will be added after peer review).
                     </p>
                     <p>
-                        To setup a private local server, the repository and instructions are available through Github at <a href="https://github.com/TKDBB84/trichomenet">https://github.com/TKDBB84/trichomenet</a>
+                        To setup a private local server, the repository and instructions are available through Github at <a href="https://github.com/TKDBB84/trichomenet" target="_blank">https://github.com/TKDBB84/trichomenet</a>
                     </p>
                     <p align="center"><br/>
                      <img src="./pics/home.png"/>

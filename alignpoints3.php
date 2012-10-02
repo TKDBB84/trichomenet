@@ -18,7 +18,6 @@ $_SESSION['outline'] = $_POST['outline'];
 $_SESSION['tricomes'] = $_POST['tricomes'];
 $_SESSION['nn_bar_range'] = $_POST['nn_bar_range'];
 $_SESSION['nn_graph_bin_size'] = $_POST['nn_graph_bin_size'];
-$_SESSION['current_genotype'] = $_POST['genotype_id'];
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -33,7 +32,12 @@ $_SESSION['current_genotype'] = $_POST['genotype_id'];
     $LEAF_COLOR_NAMES = $ini_settings['HeatMap']['Color_Name'];
     
     $HEAT_MAP_COLORS = $ini_settings['HeatMap']['HeatMap_Colors'];
-    $temp_array = $ini_settings['HeatMap']['HeatMap_MaxValue'];
+    if(!isset($_POST['HEAT_MAP_RANGES'])){
+        $temp_array = $ini_settings['HeatMap']['HeatMap_MaxValue'];
+    }else{
+        $temp_array = $_POST['HEAT_MAP_RANGES'];
+    }
+    $_SESSION['HEAT_MAP_VALUES'] = $temp_array;
     array_unshift($temp_array, 0);
     $HEAT_MAP_RANGES = $temp_array;
     if(count($HEAT_MAP_COLORS) !== count($HEAT_MAP_RANGES) ) die("HEATMAP COLOR SETUP MISS-MATCH!");
@@ -718,7 +722,7 @@ foreach($all_boxes as $box_num => $total_in_box){
                         $color = $LEAF_COLORS[$color_arg];
                         $color_by_leaf_id[$leaf_id] = $color;
                         $color_key .= '<tr><td>'.$row['leaf_name']."</td>
-                                            <td>".$LEAF_COLOR_NAMES[$color_arg]."</td>
+                                            <td><div style=\"background-color: $color; width: 15px height: 15px;\">&nbsp;</div></td>
                                             <td align='center'><input type='checkbox' name='all_leaf_ids[]' value='$leaf_id' id='include_$leaf_id' 
                                             onclick='document.getElementById(\"outline_$leaf_id\").checked=this.checked; document.getElementById(\"outline_$leaf_id\").disabled = !this.checked;' checked></td>
                                             <td align='center'><input type='checkbox' name='outline_leaf_ids[]' id='outline_$leaf_id' value='$leaf_id' ";
