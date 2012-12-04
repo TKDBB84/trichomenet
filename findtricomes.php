@@ -504,14 +504,14 @@ $stmt_get_leaf_cords->closeCursor();
                     window.scroll(0,0);
                     switch(arg){
                         case "first_leaf":
-                            e.innerHTML = '<div><p><b>It Looks Like This Is Your First Leaf!<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Looks Like This Is Your First Leaf!<b/><br/><br/>'+
                                           'Would You Like Us To Walk You Through How '+
                                           'To Mark Trichomes </p>'+
                                           '<button type="button" onClick="walkthrough(1);">'+
-                                          'Yes</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">No</button></div>';
+                                          'Yes</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">No</button></div>');
                             break;
                         case "first_step":
-                            e.innerHTML = '<div><p><b>Great!<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>Great!<b/><br/><br/>'+
                                           '<p>First we start by marking the `Tip` of the leaf.  '+
                                           'Be consistent as this is the point that will be used '+
                                           'to align this leaf with other leaves for analysis.</p>' +
@@ -522,10 +522,10 @@ $stmt_get_leaf_cords->closeCursor();
                                           '`delete` option from the menu and selecting the mark '+
                                           'you desire to remove.</p>'+
                                           '<p>When you are satisfied with your selection, please click the [Next Step] button</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                                          '<button type="button" onClick="overlay();">OK</button></div>');
                             break;
                         case "second_step":
-                            e.innerHTML = '<div><p><b>Good<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>Good<b/><br/><br/>'+
                                           '<p>Now you will be asked to mark the marginal trichomes on your leaf.</p>'+
                                           '<p>Select `Outer` from the menu and click on the relevant trichomes. '+
                                           'These marks will appear in red and may be deleted as previously described.</p>'+
@@ -534,10 +534,10 @@ $stmt_get_leaf_cords->closeCursor();
                                           'cause the leaf edge to appear jagged joining the trichomes in the order '+
                                           'they were clicked. If necessary, delete marked trichomes as previously described.</p>'+
                                           '<p>When you are done, click the [Next Step] button</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                                          '<button type="button" onClick="overlay();">OK</button></div>');
                             break;
                         case "third_step":
-                            e.innerHTML = '<div><br/>'+
+                            e_overlay.html('<div><br/>'+
                                           '<p>Now you can mark laminal trichomes.</p>'+
                                           '<p>Choose `inner` from the menu and click on all '+
                                           'the laminal trichomes. Order is not important.</p>'+
@@ -549,10 +549,10 @@ $stmt_get_leaf_cords->closeCursor();
                                           '<p>Once automatic marking has finished, you may '+
                                           'choose to add or remove trichome marks automatically '+
                                           'before saving your work.</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                                          '<button type="button" onClick="overlay();">OK</button></div>');
                             break;
                         case "forth_step":
-                            e.innerHTML = '<div><p><b>Congratulations<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>Congratulations<b/><br/><br/>'+
                                           '<p>You have marked the trichomes in your first '+
                                           'leaf. Feel free to experiment using combinations '+
                                           'of automatic &amp; manual trichome marking at '+
@@ -560,14 +560,14 @@ $stmt_get_leaf_cords->closeCursor();
                                           'for your workflow.</p><p>Be sure to save your work '+
                                           'by clicking the [save] button at the bottom of the page <p>'+
                                           '<p>Enjoy.</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>';
+                                          '<button type="button" onClick="overlay();">OK</button></div>');
                             break;
                         
                         case "no_points":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
                                           'You Cannot Analyze Leaves Without Points</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
-                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
                     if($.browser.msie && parseInt($.browser.version) < 9)
                         $('html').css('overflow','hidden');
