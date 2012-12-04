@@ -10,7 +10,7 @@ if(strpos($_GET['leaf_id'],',') === false){
     $leaf_ids = explode(',', $_GET['leaf_id']);
 }
 
-$stmt_get_leaf_details = $pdo_dbh->prepare('SELECT `leaf_id`,`leaf_name`,`file_name` FROM leafs WHERE leaf_id = :leaf_id');
+$stmt_get_leaf_details = $pdo_dbh->prepare('SELECT `leaf_name`,`file_name` FROM leafs WHERE leaf_id = :leaf_id');
 $stmt_get_leaf_details->bindParam(':leaf_id', $leaf_id);
 echo '<table border="2">';
 foreach($leaf_ids as $leaf_id){

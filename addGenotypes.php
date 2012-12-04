@@ -61,101 +61,73 @@ if (count($results) > 0) {
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
         <title>TRICHOMENET</title>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script type="text/javascript">
-            <?php if(isset($active_geno) && $active_geno !== -1){
-                echo 'document.addEventListener("DOMContentLoaded", function()
-                        {
-                            activateGenotype(',$active_geno,');
-                        }, false);';
-                  } ?>
-            
-            function delGenoType(geno_id){
-                var conf = confirm('This Will Also Delete\nAll Leaves And Trichomes\nIn This Genotype\nDo You Wish To Proceed?');
-                if(conf){
-                    var xmlhttp;
-                    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                        xmlhttp=new XMLHttpRequest();
-                    }else{// code for IE6, IE5
-                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                    }
-                    xmlhttp.onreadystatechange=function(){
-                        if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                            if(xmlhttp.responseText === '1'){
-                                var row = document.getElementById(geno_id);
-                                row.parentNode.removeChild(row);
+            $(document).ready(function() {
+                    $('#overlay').hide();
+                    $.ajaxSetup({ cache: false });
+                   
+                            
+                    $('#geno_table').on('click','.activate',function(e){
+                       var genotype = $(e.target).val();
+                       $('.activate').prop("disabled",true);
+                       $.get("activateGenotype.php",{"genotype_id":genotype},
+                        function(data){
+                            if(data === '1'){
+                                var old_row = $('#geno_table_body tr:first');
+                                var new_row = $('#'+genotype);
+                                if(old_row[0] !== new_row[0]){
+                                    old_row.css("font-weight","normal");
+                                    new_row.insertBefore(old_row);
+                                    old_row.children('td').eq(0).html('<button type="button" class="activate" value="'+old_row.prop("id")+'" >Activate</button>');
+                                    new_row.css("font-weight","bold");
+                                    new_row.children('td').eq(0).html("ACTIVE");
+                                }else{
+                                    old_row.css("font-weight","bold");
+                                    old_row.children('td').eq(0).html("ACTIVE");
+                                }
                             }else{
-                                alert('An Error Occured'+xmlhttp.responseText);
+                                alert('An Error Occured,<br/>has your session timed-out?');
                             }
-                        }
+                        $('.activate').prop("disabled",false);
+                        },'text');
+                    });
+                            
+                    $('.delete').on('click',function(e){
+                        <?php 
+                        if($user_id == 0)
+                            echo 'alert(\'Guests Cannot Delete\');' ;
+                        else
+                            echo 'var conf = confirm("This Will Also Delete\nAll Leaves And Trichomes\nIn This Genotype\nDo You Wish To Proceed?");
+                                  if(conf){
+                                    geno_id = $(e.target).val();
+                                    $.get("delLeaf.php",{"genotype_id":geno_id},
+                                    function(data){
+                                        if(data === "1"){
+                                            $("#"+geno_id).remove();
+                                        }else{
+                                            alert("An Error Occured Deleting The Genotype");
+                                        }
+                                    },"text");
+                                  }';
+                       ?>
+                    });
+                    
+                    <?php
+                    if($user_id == 0){
+                        echo '$("#new_geno").on("click",function(e){
+                                alert("Guests Cannot Add Data");
+                                e.stopImmediatePropagation();
+                              });';
                     }
-                    var sendstr = "?genotype_id="+geno_id;
-                    xmlhttp.open("GET","delLeaf.php"+sendstr,true);
-                    xmlhttp.send();
-                }
-            }
-            
-            function overlay(){
-                var e = document.getElementById("overlay");
-                if(e.style.visibility == "visible"){
-                    e.style.visibility = "hidden";
-                    document.body.style.overflow = 'auto';
-                }else{
-                    e.style.visibility = "visible";
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-            
-            function activateGenotype(genotype){
-                var all_buttons = document.getElementsByClassName('activate');
-                for (var i = all_buttons.length - 1; i >= 0; i--){
-                    all_buttons[i].disabled = true;
-                }
-                var xmlhttp;
-                if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                    xmlhttp=new XMLHttpRequest();
-                }else{// code for IE6, IE5
-                    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                }
-                xmlhttp.onreadystatechange=function(){
-                    if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                        if(xmlhttp.responseText === '1'){
-                            move_row(genotype);
-                        }else{
-                            alert('An Error Occured,<br/>has your session timed-out?');
-                        }
-                        for (var i = all_buttons.length - 1; i >= 0; i--){
-                            all_buttons[i].disabled = false;
-                        }
-                    }
-                }
-                var sendstr = "?genotype_id="+genotype;
-                xmlhttp.open("GET","./activateGenotype.php"+sendstr,true);
-                xmlhttp.send();
-            }
-            
-            function move_row(row_id) {
-                var new_head = document.getElementById(row_id);
-                var old_head = document.getElementById('geno_table').rows[1];
-                
-                var tmp_id = old_head.id;
-                old_head.id = new_head.id;
-                new_head.id = tmp_id;
-                
-                var old_cells = old_head.getElementsByTagName("td");
-                old_cells[0].style.fontWeight="normal";
-                old_cells[1].style.fontWeight="normal";
-                old_cells[0].innerHTML = '<button type="button" class="activate" onClick="activateGenotype('+tmp_id+');">Activate</button>';
-                
-                var new_cells = new_head.getElementsByTagName("td");
-                new_cells[0].style.fontWeight="bold";
-                new_cells[1].style.fontWeight="bold";
-                new_cells[0].innerHTML = 'ACTIVE';
-                
-                var tmp = old_head.innerHTML;
-                old_head.innerHTML = new_head.innerHTML;
-                new_head.innerHTML = tmp;
-                
-            }
+                    ?>
+                            
+                    <?php
+                    if(isset($active_geno) && $active_geno !== -1)
+                        echo '$("#activate_',$active_geno,'").trigger("click");';
+                    ?>
+                    
+                });         
         </script>
     </head>
     <body>
@@ -211,33 +183,29 @@ if (count($results) > 0) {
                             </div>
                             <div id="genotypes" style="padding-left: 20px;">
                                 <table id="geno_table" border="1">
+                                    <thead>
                                     <tr>
                                         <th colspan="3">Categories</th>
                                     </tr>
+                                    </thead>
+                                    <tbody id="geno_table_body">
                                     <?php
                                     if (isset($genotypes[0]) && $genotypes[0] === "No Genotypes") {
                                         //no genotypes
                                     } else {
                                         foreach ($genotypes as $id => $genotype)
                                             echo '<tr id="', $id, '">',
-                                            '<td>','<button type="button" class="activate" onClick="activateGenotype(',$id,');">Activate</button>','</td>',
+                                            '<td>','<button type="button" class="activate" id="activate_',$id,'" value="',$id,'">Activate</button>','</td>',
                                             '<td>', $genotype, '</td>',
-                                            '<td><button type="button" value="', $id,
-                                            '" onClick=',
-                                            ($user_id == 0) ?
-                                                    '"alert(\'Guests Cannot Delete\');"' :
-                                                    '"delGenoType(', $id, ');"',
-                                            '>Delete</button>', '</td>',
-                                            '</tr>';
+                                            '<td><button type="button" class="delete" value="',$id,'">Delete</button>', '</td>',
+                                            '</tr>',PHP_EOL;
                                     }
                                     ?>
                                     <tr>
                                         <td colspan="2"><input type="text" name="new_genotype"/></td>
-                                        <td><button type="Submit" name="new_geno"<?php
-                                    if ($user_id == 0)
-                                        echo ' onClick="alert(\'Guests Cannot Add Data\');return false;"';
-                                    ?>>Add</button></td>
+                                        <td><button type="Submit" id="new_geno" name="new_geno">Add</button></td>
                                     </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         <!--bottom right, link when read to next step fro every page-->
@@ -253,11 +221,5 @@ if (count($results) > 0) {
         </div>
     </body>
    
-<div id="overlay">
-     <div>
-           <p><b>It Appears You Have No Categories<b/><br/><br/>
-           You Must Add The Catagories You Are Working With
-           Before You Can Use Any Other Pages!</p>
-           <button type="button">Take Me To Categories Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick='overlay()'>Ignore</button>
-     </div></div>
+<div id="overlay"></div>
 </html>

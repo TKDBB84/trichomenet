@@ -65,10 +65,11 @@ $stmt_get_leaf_cords->closeCursor();
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
         <title>TRICHOMENET</title>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"> </script> 
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script type="text/javascript">
 
-    document.addEventListener("DOMContentLoaded", function(){
+    $(document).ready(function(){
+        $('#overlay').hide();
         <?php
             if($first_leaf){
                 echo 'overlay("first_leaf");';
@@ -84,7 +85,7 @@ $stmt_get_leaf_cords->closeCursor();
                echo 'addPoint(',$has_tip['x'],',',$has_tip['y'],',\'tip\');';
            }
         ?>
-    }, false);
+    });
     
     function loading(swt){
         var canvas = document.getElementById("myCanvas");
@@ -494,10 +495,11 @@ $stmt_get_leaf_cords->closeCursor();
     
     
     function overlay(arg){
-                var e = document.getElementById("overlay");
-                if(e.style.visibility == "visible"){
-                    e.style.visibility = "hidden";
-                    document.body.style.overflow = 'auto';
+                var e_overlay = $("#overlay");
+                if(e_overlay.is(':visible')){
+                    if($.browser.msie && parseInt($.browser.version) < 9)
+                        $('html').css('overflow','auto');
+                    $('body').css('overflow','auto').css('padding-right','0');
                 }else{
                     window.scroll(0,0);
                     switch(arg){
@@ -567,9 +569,11 @@ $stmt_get_leaf_cords->closeCursor();
                                           '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
                                           'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
                             break;
-                    }
-                    e.style.visibility = "visible";
-                    document.body.style.overflow = 'hidden';
+                    if($.browser.msie && parseInt($.browser.version) < 9)
+                        $('html').css('overflow','hidden');
+                    $('body').css('overflow','hidden').css('padding-right','17px');
+                }
+                e_overlay.toggle();
                 }
             }
 </script>

@@ -94,262 +94,217 @@ $has_cords = ($result2 !== false);
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
         <title>TRICHOMENET</title>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script type="text/javascript">
-            document.addEventListener("DOMContentLoaded", function(){
-            <?php
+            $(document).ready(function(){
+                $('#overlay').hide();
+            
+                    
+                $('.leaf_list').on("click",function(e){
+                    var $list = $(e.target).parent();
+                    var $options = $("option:selected",$list);
+                    var selected = $options.map(function(){
+                            return this.value;
+                    }).get().join(",");
+                    if(selected == "") return;
+                    $.get("leafDetails.php",{"leaf_id":selected},
+                            function(data){
+                                $('#details').html(data);
+                            },"html");
+                });
+                
+                $('#add_this').on("click",function(){
+                    $("#fl > option:selected").each(function(){
+                        $(this).remove().appendTo("#selected");
+                    });
+                    var $r = $("#selected option");
+                    $r.sort(function(a,b){
+                        if(a.text < b.text) return -1;
+                        if(a.text == b.text) return 0;
+                        return 1;
+                    });
+                    $($r).remove();
+                    $("#selected").append($($r));
+
+                    var $r = $("#fl option");
+                    $r.sort(function(a,b){
+                        if(a.text < b.text) return -1;
+                        if(a.text == b.text) return 0;
+                        return 1;
+                    });
+                    $($r).remove();
+                    $("#fl").append($($r));   
+                    return false;
+               });
+                
+               $('#remove_this').on("click",function(){
+                    $("#selected > option:selected").each(function(){
+                        $(this).remove().appendTo("#fl");
+                    });
+                    var $r = $("#selected option");
+                    $r.sort(function(a,b){
+                        if(a.text < b.text) return -1;
+                        if(a.text == b.text) return 0;
+                        return 1;
+                    });
+                    $($r).remove();
+                    $("#selected").append($($r));
+
+                    var $r = $("#fl option");
+                    $r.sort(function(a,b){
+                        if(a.text < b.text) return -1;
+                        if(a.text == b.text) return 0;
+                        return 1;
+                    });
+                    $($r).remove();
+                    $("#fl").append($($r));   
+                    return false;
+               });
+               
+               $('.colors').on("change",function(){
+                    var id_str = '#heat_val_';
+                    var $e = $(id_str+'0');
+                    $e.attr('min', 0)
+                    var $e_p1 = $(id_str+'1');
+                    var val = Math.round(+$e.val()*10)/10;
+                    $e_p1.attr('min',val);
+                    val = Math.round(($e_p1.val()*10))/10;
+                    $e.attr('max',Math.round((+val)*10)/10);
+                    for(var i = 1 ; i < <?php echo count($HEAT_MAP_VALUES)-1; ?> ; i++){
+                            var $e = $(id_str+i);
+                            var $e_m1 = $(id_str+(i-1));
+                            var $e_p1 = $(id_str+(i+1));
+                            val = Math.round(+$e.val()*10)/10;
+                            $e_p1.attr('min',Math.round((+val)*10)/10);
+                            $e_m1.attr('max',Math.round((+val)*10)/10);
+                    }
+                    $e = $(id_str + '<?php echo count($HEAT_MAP_VALUES)-1; ?>');
+                    $e.attr('max',99);
+                    var $e_m1 = $(id_str + '<?php echo count($HEAT_MAP_VALUES)-2; ?>');
+                    val = Math.round(+$e.val()*10)/10;
+                    $e_m1.attr('max',Math.round((+val)*10)/10);
+               });
+               
+               $('#main_form').on('submit',function(event){
+                    if( $("#selected > option").length < 2){
+                        alert('You Must Select At Least 2 Leaves');
+                        event.preventDefault();
+                        return false;
+                    }
+
+                    for(var i = 0 ; i < <?php echo count($HEAT_MAP_VALUES); ?> ; i++){
+                        var id_str = '#heat_val_';
+                        var $n = $(id_str+i);
+                        if(!jQuery.isNumeric($n.val())){
+                            alert('Hat Map Color Values Must Be Numbers');
+                            event.preventDefault();
+                            return false;
+                        }else{
+                            if(i !== 0){
+                                var n_m1 = parseFloat($(id_str+(i-1)).val());
+                                if(parseFloat($n.val()) < n_m1){
+                                    alert('Heat Map Color Values Must Be Ascending');
+                                    event.preventDefault();
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+
+                   var num_inputs = new Array("#boxes_1","#boxes_2","#bar_range","#graph_bin_size","#nn_bar_range","#nn_graph_bin_size") 
+                   for(var i = 0 ; i < num_inputs.length ; i++){
+                      if(!jQuery.isNumeric($(num_inputs[i]).val())){
+                          var error;
+                          switch(num_inputs[i]){
+                              case "#boxes_1":
+                                  error = 'Heat Map Grid Size For X-Axis ';
+                                  break;
+                              case "#boxes_2":
+                                  error = 'Heat Map Grid Size For Y-Axis ';
+                                  break;
+                              case "#bar_range":
+                                  error = 'All Trichomes Distance Range ';
+                                  break;
+                              case "#graph_bin_size":
+                                  error = 'All Trichomes Distance Bin Size ';
+                                  break;
+                              case "#nn_bar_range":
+                                  error = 'Next Neighbor Distance Range ';
+                                  break;
+                              case "#nn_graph_bin_size":
+                                  error = 'Next Neighbor Distance Bin Size ';
+                                  break;
+                          }
+                          error = error + 'Must Be Numeric';
+                          alert(error);
+                          event.preventDefault();
+                          return false;
+                      }
+                   }
+
+                   $("#selected > option").attr('selected',true);
+                   $("#fl > option").attr('selected',false);
+
+               });
+               
+               <?php
             if(isset($genotypes[0]) && $genotypes[0] === "No Genotypes"){
                echo 'overlay("no_genotypes");';
             } elseif ($active_geno === -1) {
-                'overlay("no_active_type");';
-            } elseif (isset($_SESSION['all_ids'])) {
-                foreach ($_SESSION['all_ids'] as $leaf_id)
-                    echo 'moveLeaf("', $leaf_id, '");';
-                unset($_SESSION['all_ids']);
-            }elseif((isset($has_leafs) && $has_leafs === false)){
+               echo 'overlay("no_active_type");';
+            } elseif((isset($has_leafs) && $has_leafs === false)){
                echo 'overlay("no_leafs");';
             }elseif(isset($has_cords) && $has_cords === false){
                 echo 'overlay("no_points");';
+            }elseif (isset($_SESSION['all_ids'])) {
+                foreach ($_SESSION['all_ids'] as $leaf_id)
+                    echo '$(\'#fl > option[value="',$leaf_id,'"]\').attr("selected",true);';
+                echo '$("#add_this").trigger("click");';
+                unset($_SESSION['all_ids']);
             }
             ?>
-            }, false);
-          function getLeafDetails(list){
-              var selected = new Array();
-              for (var i = 0; i < list.options.length; i++)
-                  if (list.options[ i ].selected)
-                      selected.push(list.options[ i ].value);
-              if(selected.length == 0) return;
-              if(selected.length == 1)
-                  leaf_id_list = selected[0];
-              else
-                  leaf_id_list = selected.join();
-              var xmlhttp;
-              if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                  xmlhttp=new XMLHttpRequest();
-              }else{// code for IE6, IE5
-                  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-              }
-              xmlhttp.onreadystatechange=function(){
-                  if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                      document.getElementById('details').innerHTML=xmlhttp.responseText;
-                  }
-              }
-              var sendstr = "?leaf_id="+leaf_id_list;
-              xmlhttp.open("GET","leafDetails.php"+sendstr,true);
-              xmlhttp.send();
-          }
-
-          function moveLeaf(leaf_id){
-              if( leaf_id === -1 || leaf_id === "-1") return false;
-              var remove_from = document.getElementById('fl');  
-              var i;
-              var newOptions = new Array();
-              //var elOptNew = document.createElement('option');
-              for (i = remove_from.length - 1; i>=0; i--) {
-                  if (remove_from.options[i].selected || remove_from.options[i].value == leaf_id) {
-                      newOptions.push(document.createElement('option'));
-                      var arr_index = newOptions.length - 1;
-                      newOptions[arr_index].text = remove_from.options[i].text;
-                      newOptions[arr_index].value = remove_from.options[i].value;
-                      remove_from.remove(i);
-                  }
-              }
-              var add_to = document.getElementById('selected');
-              for(var i = 0 ; i < newOptions.length ; i++){
-                  try{
-                      add_to.add(newOptions[i], null); 
-                  }catch(ex){
-                      add_to.add(newOptions[i]);
-                  }
-              }
-              sortSelect(add_to);
-              return false;
-          }
-
-          function moveBack(){
-              var remove_from = document.getElementById('selected');  
-              var i;
-              var newOptions = new Array();
-              //var elOptNew = document.createElement('option');
-              for (i = remove_from.length - 1; i>=0; i--) {
-                  if (remove_from.options[i].selected) {
-                      newOptions.push(document.createElement('option'));
-                      var arr_index = newOptions.length - 1;
-                      newOptions[arr_index].text = remove_from.options[i].text;
-                      newOptions[arr_index].value = remove_from.options[i].value;
-                      remove_from.remove(i);
-                  }
-              }
-              var add_to = document.getElementById('fl');
-              for(var i = 0 ; i < newOptions.length ; i++){
-                  try{
-                      add_to.add(newOptions[i], null); 
-                  }catch(ex){
-                      add_to.add(newOptions[i]);
-                  }
-              }
-              sortSelect(add_to);
-              return false;
-          }
-
-          function sortSelect(selElem) {
-              var tmpAry = new Array();
-              for (var i=0;i<selElem.options.length;i++) {
-                  tmpAry[i] = new Array();
-                  tmpAry[i][0] = selElem.options[i].text;
-                  tmpAry[i][1] = selElem.options[i].value;
-              }
-              tmpAry.sort();
-              while (selElem.options.length > 0) {
-                  selElem.options[0] = null;
-              }
-              for (var i=0;i<tmpAry.length;i++) {
-                  var op = new Option(tmpAry[i][0], tmpAry[i][1]);
-                  selElem.options[i] = op;
-              }
-              return;
-          }
-
-          function isNumeric(n) {
-            return !isNaN(parseFloat(n)) && isFinite(n);
-          }
-
-
-          function loop_select() {
-              var select_box = document.getElementById('selected');
-              if(select_box.options.length < 2){
-                  alert('You Must Select At Least 2 Leaves');
-                  return false;
-              }
-              
-              for(var i = 0 ; i < <?php echo count($HEAT_MAP_VALUES); ?> ; i++){
-                  var id_str = 'heat_val_';
-                  var id = id_str + i;
-                  var n = document.getElementById(id).value;
-                  if(!isNumeric(n)){
-                      alert('Hat Map Color Values Must Be Numbers');
-                      return false;
-                  }else{
-                      if(i !== 0){
-                          var m1_id = id_str + (i-1);
-                          var n_m1 = parseFloat(document.getElementById(m1_id).value);
-                          n = parseFloat(n);
-                          if(n < n_m1){
-                              alert('Heat Map Color Values Must Be Ascending');
-                              return false;
-                          }
-                      }
-                  }
-              }
-              
-             var num_inputs = new Array("boxes_1","boxes_2","bar_range","graph_bin_size","nn_bar_range","nn_graph_bin_size") 
-             for(var i = 0 ; i < num_inputs.length ; i++){
-                if(!isNumeric(document.getElementById(num_inputs[i]).value)){
-                    var error;
-                    switch(num_inputs[i]){
-                        case "boxes_1":
-                            error = 'Heat Map Grid Size For X-Axis ';
-                            break;
-                        case "boxes_2":
-                            error = 'Heat Map Grid Size For Y-Axis ';
-                            break;
-                        case "bar_range":
-                            error = 'All Trichomes Distance Range ';
-                            break;
-                        case "graph_bin_size":
-                            error = 'All Trichomes Distance Bin Size ';
-                            break;
-                        case "nn_bar_range":
-                            error = 'Next Neighbor Distance Range ';
-                            break;
-                        case "nn_graph_bin_size":
-                            error = 'Next Neighbor Distance Bin Size ';
-                            break;
-                    }
-                    error = error + 'Must Be Numeric';
-                    alert(error);
-                    return false;
-                }
-             }
-              
-              for(i=0;i<=select_box.options.length-1;i++)
-                  select_box.options[i].selected = true;
-              var select_box = document.getElementById('fl');
-              for(i=0;i<=select_box.options.length-1;i++)
-                  select_box.options[i].selected = false;
-              return true;
-          }
-          
-          function update_val(num){
-              var id_str = 'heat_val_';
-              var id = id_str + '0';
-              var e = document.getElementById(id);
-              e.min = 0;
-              var id_p1 = id_str + '1';
-              var e_p1 = document.getElementById(id_p1);
-              var val = Math.round(+e*10)/10;
-              e_p1.min = (val);
-              val = Math.round((+e_p1.value*10))/10;
-              e.max = Math.round((+val)*10)/10;
-              var id_m1;
-              var e_m1;
-              for(var i = 1 ; i < <?php echo count($HEAT_MAP_VALUES)-1; ?> ; i++){
-                      id = id_str + i;
-                      id_m1 = id_str + (i-1);
-                      id_p1 = id_str + (i+1);
-                      e = document.getElementById(id);
-                      e_m1 = document.getElementById(id_m1);
-                      e_p1 = document.getElementById(id_p1);
-                      val = Math.round(+e.value*10)/10;
-                      e_p1.min = Math.round((+val)*10)/10;
-                      e_m1.max = Math.round((+val)*10)/10;
-              }
-              id = id_str + '<?php echo count($HEAT_MAP_VALUES)-1; ?>';
-              id_m1 = id_str + '<?php echo count($HEAT_MAP_VALUES)-2; ?>';
-              e = document.getElementById(id);
-              e.max = 99;
-              e_m1 = document.getElementById(id_m1);
-              val = Math.round(+e*10)/10;
-              e_m1.max = Math.round((+val)*10)/10;
-          }
-          
-          
+            });
+                  
           function overlay(arg){
-                var e = document.getElementById("overlay");
-                if(e.style.visibility == "visible"){
-                    e.style.visibility = "hidden";
-                    document.body.style.overflow = 'auto';
+                var e_overlay = $("#overlay");
+                if(e_overlay.is(':visible')){
+                    if($.browser.msie && parseInt($.browser.version) < 9)
+                        $('html').css('overflow','auto');
+                    $('body').css('overflow','auto').css('padding-right','0');
                 }else{
                     switch(arg){
                         case "no_genotypes":
-                            e.innerHTML = '<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+
                                           'You Must Add The Categories You Are Working With'+
                                           'Before You Can Use Any Other Pages!</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
-                                          'Take Me To Category Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Category Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
                         case "no_active_type":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Activated A Category<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Appears You Have Not Activated A Category<b/><br/><br/>'+
                                           'You Must Activate A Category To Working With'+
                                           'Before You Can Use Any Other Pages!</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
-                                          'Take Me To Category Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Category Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
                         case "no_leafs":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Leaves To This Category<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Appears You Have Not Add Any Leaves To This Category<b/><br/><br/>'+
                                           'You Cannot Analyze Leaves Without First Adding Them</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
-                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
                         case "no_points":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
                                           'You Cannot Analyze Leaves Without Points</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
-                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
-                    }
-                    e.style.visibility = "visible";
-                    document.body.style.overflow = 'hidden';
+                        }
+                    if($.browser.msie && parseInt($.browser.version) < 9)
+                        $('html').css('overflow','hidden');
+                    $('body').css('overflow','hidden').css('padding-right','17px');
                 }
+                e_overlay.toggle();
             }
         </script>
     </head>
@@ -391,7 +346,7 @@ $has_cords = ($result2 !== false);
             <div id="main_contents"><br/>
                 Select leaves and options for positional analysis. Only leafs in the active category may be analyzed. To analyze other categories you must activate them at <a href="./addGenotypes.php">Step 1</a>.
                 <div id="framed">
-                    <div id="main"><form action="alignpoints3.php" method="post" onSubmit="return loop_select();">
+                    <div id="main"><form action="alignpoints3.php" method="post" id="main_form">
                             <table rules="groups">
                                 <thead>
                                     <tr>
@@ -413,7 +368,7 @@ $has_cords = ($result2 !== false);
                                         <td>
                                         </td>
                                         <td>
-                                            <select name="full_list" id="fl" onChange="getLeafDetails(this);" size="5" multiple="multiple">
+                                            <select name="full_list" id="fl" class="leaf_list" size="5" multiple="multiple">
                                                 <?php
                                                 foreach ($all_leafs as $leaf_id => $leaf) {
                                                     echo '<option value="', $leaf_id, '">', $leaf['name'], ' (', $leaf['count'], ')</option>';
@@ -422,11 +377,11 @@ $has_cords = ($result2 !== false);
                                             </select>
                                         </td>
                                         <td align="center">
-                                            <button type="button" name="add_this" onclick="moveLeaf(this.value);return false;"> &gt;&gt; </button><br/>
-                                            <button type="button" onClick="moveBack();return false;"> &lt;&lt; </button>
+                                            <button type="button" id="add_this" name="add_this" onclick="moveLeaf(this.value);return false;"> &gt;&gt; </button><br/>
+                                            <button type="button" id="remove_this" onClick="moveBack();return false;"> &lt;&lt; </button>
                                         </td>
                                         <td>
-                                            <select name="all_leaf_ids[]" id="selected" onChange="getLeafDetails(this);" size="5" multiple="multiple"></select>
+                                            <select name="all_leaf_ids[]" id="selected" class="leaf_list" size="5" multiple="multiple"></select>
                                         </td>
                                         <td>
 
@@ -493,15 +448,15 @@ $has_cords = ($result2 !== false);
                                         //$HEAT_MAP_COLORS
                                         //$HEAT_MAP_VALUES
                                             //echo '<td align="center">0</td>';
-                                            echo '<td align="center">&lt;<input type="number" name="HEAT_MAP_RANGES[0]" id="heat_val_0" value="',$HEAT_MAP_VALUES[0],'"max="',$HEAT_MAP_VALUES[1],'" min="0" step="0.1" style="width: 40px;" onClick="update_val(0);"/></td>';
+                                            echo '<td align="center">&lt;<input type="number" class="colors" name="HEAT_MAP_RANGES[0]" id="heat_val_0" value="',$HEAT_MAP_VALUES[0],'"max="',$HEAT_MAP_VALUES[1],'" min="0" step="0.1" style="width: 40px;"/></td>';
                                             $NUM_VALUES = count($HEAT_MAP_VALUES);
                                             for($i = 1 ; $i < ($NUM_VALUES-1) ; $i++){
                                                 $min_value = $HEAT_MAP_VALUES[$i-1];
                                                 $value = $HEAT_MAP_VALUES[$i];
                                                 $max_value = $HEAT_MAP_VALUES[$i+1];
-                                                echo '<td align="center">&lt;<input type="number" name="HEAT_MAP_RANGES[',$i,']" id="heat_val_',$i,'" value="',$value,'"max="',$max_value,'" min="',$min_value,'" step="0.1" style="width: 40px;" onClick="update_val(',$i,');"/></td>';
+                                                echo '<td align="center">&lt;<input type="number" class="colors" name="HEAT_MAP_RANGES[',$i,']" id="heat_val_',$i,'" value="',$value,'"max="',$max_value,'" min="',$min_value,'" step="0.1" style="width: 40px;"/></td>';
                                             }
-                                            echo '<td align="center">&lt;<input type="number" name="HEAT_MAP_RANGES[',$NUM_VALUES-1,']" id="heat_val_',$NUM_VALUES-1,'" value="',$HEAT_MAP_VALUES[$NUM_VALUES-1],'"max="99" min="',$HEAT_MAP_VALUES[$NUM_VALUES-2],'" step="0.1" style="width: 40px;" onClick="update_val(',$NUM_VALUES-1,');"/></td>';
+                                            echo '<td align="center">&lt;<input type="number" class="colors" name="HEAT_MAP_RANGES[',$NUM_VALUES-1,']" id="heat_val_',$NUM_VALUES-1,'" value="',$HEAT_MAP_VALUES[$NUM_VALUES-1],'"max="99" min="',$HEAT_MAP_VALUES[$NUM_VALUES-2],'" step="0.1" style="width: 40px;"/></td>';
                                         ?>
                                         <td>
                                             ++

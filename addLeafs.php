@@ -142,28 +142,19 @@ if($active_geno !== -1){
                         <p style="color: red; position:absolute; bottom:'.(0.125*$thumb_height).'px;">
                         '.$row['leaf_name'].'
                         </p>'.
-                        '<button style="position:absolute; bottom:'.($thumb_height*-(.5)).'px; right:0; width: 100%;" type="button" name="dwnld" onClick="fetchImg('.$row['leaf_id'].');">Download Image</button></td>'.
+                        '<button style="position:absolute; bottom:'.($thumb_height*-(.5)).'px; right:0; width: 100%;" type="button" name="" class="dwnld" value="'.$row['leaf_id'].'">Download Image</button></td>'.
                      '</div>'.
                     '<td align="center" ><a href="./findtricomes.php?leaf_id='.$row['leaf_id'].'">Mark Trichomes</a><br/><br/>
                         <b>Number Of Marked Trichomes:</b>
                         <br/>Marginal: '.$outer.'<br/>Laminal: '.$inner.'<br/>Auto: '.$auto.'<br/></td>'.
-                    '<td><button type="button" name="del" onClick=';
-            if($user_id == 0)
-                $form_innerHTML .= '"alert(\'Guests Cannot Delete\');"';
-            else
-                $form_innerHTML .= '"delLeaf('.$row['leaf_id'].');"';
-            $form_innerHTML .=  '>Delete</button></tr>';
-
+                    '<td><button type="button" name="del" class="del_leaf" value="'.$row['leaf_id'].'">Delete</button></tr>';
         }
     }
 }
 $form_innerHTML .= '<tr>'.
             '<td colspan="1">Name:<br/><input type="text" id="leafname" name="new_leaf_name" style="width:80%;"/></td>'.
-            '<td colspan="1">Upload Another Leaf To This Category:<br/><input type="file" name="new_leaf_file" onChange="setName(this.value);" /></td>'.
-            '<td colspan="1"><button type="submit" name="add_new_leaf"';
-            if($user_id == 0)
-                $form_innerHTML .= ' onClick="alert(\'Guests Cannot Add Data\');return false;"';
-            $form_innerHTML .= '>Upload</button></td>'.
+            '<td colspan="1">Upload Another Leaf To This Category:<br/><input type="file" id="new_leaf_file" name="new_leaf_file"  /></td>'.
+            '<td colspan="1"><button type="submit" id="add_new_leaf" name="add_new_leaf">Upload</button></td>'.
     '</tr>'.
  '</table>'.'<em>pictures MUST BE 5 MB or smaller</em>';
 
@@ -175,118 +166,100 @@ $form_innerHTML .= '<tr>'.
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css" media="screen"></style>
         <title>TRICHOMENET</title>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script type="text/javascript">
+            $(document).ready(function(){
+                $('#overlay').hide();
             <?php if(isset($genotypes[0]) && $genotypes[0] === "No Genotypes"){
-                        echo 'document.addEventListener("DOMContentLoaded", function()
-                            {',
-                            'overlay("no_genotypes");',
-                            '}, false);';
+                        echo 'overlay("no_genotypes");';
                   }elseif($active_geno === -1){
-                      echo 'document.addEventListener("DOMContentLoaded", function()
-                            {',
-                            'overlay("no_active_type");',
-                            '}, false);';
-                  } ?>
-            
-            function setName(val){
-                var parts = val.split("/");
-                if(parts.length == 1){
-                    parts = val.split("\\");
-                }
-                var piece_num = parts.length-1;
-                var name = parts[piece_num];
-                var name_parts = name.split(".");
-                var name_length = name_parts.length - 1;
-                name = '';
-                for(var i = 0 ; i < name_length ; i++){
-                    name += name_parts[i];
-                }
-                var txt = document.getElementById('leafname');
-                if(txt.value === ''){
-                    txt.value = name;
-                }
-                return;
-            }
-            
-            function splitPath(str) {
-                var rawParts = str.split("/"), parts = [];
-                for (var i = 0, len = rawParts.length, part; i < len; ++i) {
-                    part = "";
-                    while (rawParts[i].slice(-1) == "\\") {
-                    part += rawParts[i++].slice(0, -1) + "/";
-                    }
-                parts.push(part + rawParts[i]);
-                }
-                return parts;
-            }
-    
-            function delLeaf(leaf_id){
-                var conf = confirm('This Will Also Delete\nAll Trichomes\nFor This Leaf\nDo You Wish To Proceed?');
-                if(conf){
-                    var xmlhttp;
-                    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                        xmlhttp=new XMLHttpRequest();
-                    }else{// code for IE6, IE5
-                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                    }
-                    xmlhttp.onreadystatechange=function(){
-                        if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                            if(xmlhttp.responseText === '1'){
-                                var row = document.getElementById(leaf_id);
-                                row.parentNode.removeChild(row);
-                            }else{
-                                alert('An Error Occured Please Refresh and Try Again\nYour Session May Have Timed-out');
-                            }
+                        echo 'overlay("no_active_type");';
+                  } 
+                  
+                  if($user_id == 0){
+                      echo '$("#add_new_leaf").on("click",function(e){
+                                alert(\'Guests Cannot Add Data\');
+                                return false;
+                            });';
+                  }
+            ?>
+                          
+                 $('.dwnld').on("click",function(e){
+                    window.location = "./mkimg.php?leaf_id="+$(e.target).val();
+                 });
+                 
+                 $('#new_leaf_file').on("change",function(e){
+                    var in_val = $(e.target).val();
+                    if($("#leafname").val() === ''){
+                        var parts = in_val.split("/");
+                        if(parts.length == 1){
+                            parts = in_val.split("\\");
                         }
-                    }
-                    var sendstr = "?leaf_id="+leaf_id;
-                    xmlhttp.open("GET","delLeaf.php"+sendstr,true);
-                    xmlhttp.send();
-                }
-            }
-            
-            function fetchImg(leaf_id){
-                    var xmlhttp;
-                    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                        xmlhttp=new XMLHttpRequest();
-                    }else{// code for IE6, IE5
-                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                    }
-                    xmlhttp.onreadystatechange=function(){
-                        if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                                document.getElementById('file_return').innerHTML=xmlhttp.responseText;
+                        var piece_num = parts.length-1;
+                        var name = parts[piece_num];
+                        var name_parts = name.split(".");
+                        var name_length = name_parts.length - 1;
+                        name = '';
+                        for(var i = 0 ; i < name_length ; i++){
+                            name += name_parts[i];
                         }
-                    }
-                var sendstr = "?leaf_id="+leaf_id;
-                xmlhttp.open("GET","./fetchImg.php"+sendstr,true);
-                xmlhttp.send();
-            }
-            
+                        $("#leafname").val(name);
+                    }   
+                });
+                
+                $('.del_leaf').on("click",function(e){
+                    var leaf_id = $(e.target).val();
+                    var conf = confirm('This Will Also Delete\nAll Trichomes\nFor This Leaf\nDo You Wish To Proceed?');
+                    if(conf){
+                        $.get("delLeaf.php",{"leaf_id":leaf_id},
+                            function(data){
+                                if(data === '1'){
+                                    $('#'+leaf_id).remove();
+                                }else{
+                                    alert('An Error Occured Deleting The Leaf');
+                                }
+                            },'text');
+                    }   
+                })
+                
+                <?php
+                    if($user_id == 0)
+                        echo '$("#add_leaf_form").on("submit",function(e){
+                                alert("Guests Cannot Add Data");
+                                e.stopImmediatePropagation();
+                            });';
+                ?>
+                
+            });
+                     
             function overlay(arg){
-                var e = document.getElementById("overlay");
-                if(e.style.visibility == "visible"){
-                    e.style.visibility = "hidden";
-                    document.body.style.overflow = 'auto';
+                var e_overlay = $("#overlay");
+                if(e_overlay.is(':visible')){
+                    if($.browser.msie && parseInt($.browser.version) < 9)
+                        $('html').css('overflow','auto');
+                    $('body').css('overflow','auto').css('padding-right','0');
                 }else{
                     switch(arg){
                         case "no_genotypes":
-                            e.innerHTML = '<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+
+                            e_overlay.html('<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+
                                           'You Must Add The Genotypes You Are Working With'+
                                           'Before You Can Use Any Other Pages!</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
-                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
                         case "no_active_type":
-                            e.innerHTML = '<div><p><b>It Appears You Have Not Activated A Genotype<b/><br/><br/>'+
+                            e_overlay.html = ('<div><p><b>It Appears You Have Not Activated A Genotype<b/><br/><br/>'+
                                           'You Must Activate A Genotype To Working With'+
                                           'Before You Can Use Any Other Pages!</p>'+
                                           '<button type="button" onClick="overlay();window.location = \'./addGenotypes.php\';">'+
-                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>';
+                                          'Take Me To GenoType Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
                             break;
                     }
-                    e.style.visibility = "visible";
-                    document.body.style.overflow = 'hidden';
+                    if($.browser.msie && parseInt($.browser.version) < 9)
+                        $('html').css('overflow','hidden');
+                    $('body').css('overflow','hidden').css('padding-right','17px');
                 }
+                e_overlay.toggle();
             }
         </script>
     </head>
@@ -337,12 +310,11 @@ $form_innerHTML .= '<tr>'.
                 <p>
                     Images should be uploaded at a resolution of 1280 x 960 pixels or smaller.
                     Leaves should be horizontal, with the tip on the right hand side of the picture.
-                    See <a href="./example.html"
+                    See <a href="./example.html" target="_blank" 
                               onClick="window.open('./example.html','','width=375, height=350, left=200, top=200, screenX=200, screenY=200');return false;">An Example Here</a>
                 </p>
                 <div id="framed">
-                    <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data" 
-                                <?php echo ($user_id == 0) ? 'onSubmit="return false;"' : ''; ?>>
+                    <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" id="add_leaf_form" enctype="multipart/form-data">
                         <?php if(isset($active_geno) && $active_geno != -1){ ?>
                         Leaves For Current Category: <a href="./addGenotypes.php"><?php echo $genotypes[$active_geno]; ?></a><br/><br/>
                         <div id="leafs" style="padding-left: 20px;"><?php echo $form_innerHTML; ?></div>

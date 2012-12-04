@@ -6,7 +6,6 @@ include_once 'connection.php';
 //   deleteGenotype Will Delete All Leaves 
 //   and All Cords Associated with that Genotype!
 
-
 if(isset($_GET['leaf_id'])){
     die(deleteLeaf($_GET['leaf_id'],$pdo_dbh));
 }elseif(isset($_GET['genotype_id'])){
