@@ -9,8 +9,9 @@ Basic Information And Prerequists
 1. TRICHOMENET is developed for use with PHP 5.3+, and tested with MySQL, however other SQL database systems with PHP 5.3+ connectivity should work as well.
 2. TRICHOMENET also requires the GD libraries for PHP.
 3. TRICHOMENET additionally requires FIJI ( http://fiji.sc/ ) to utilize the ImageJ detection.
-4. A setup script is currenly not included in the repository but is planned to be developed at a later date.
-5. The settings.ini file contains all database connectivity information as well as path information for TRICHOMENET.
+4. TRICHOMENET calls FIJI with xvfb, as TRICHOMENET's author could not get the headless functionalty of FIJI to work properaly.  So XVFB will need to be available on the system as well.  The screen number is located in the execution script file and can be freely editted.
+5. A setup script is currenly not included in the repository but is planned to be developed at a later date.
+6. The settings.ini file contains all database connectivity information as well as path information for TRICHOMENET.
 
 ## Deploying
 
