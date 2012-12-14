@@ -239,6 +239,7 @@ $form_innerHTML .= '<tr>'.
                         $('html').css('overflow','auto');
                     $('body').css('overflow','auto').css('padding-right','0');
                 }else{
+                    $("html,body").animate({scrollTop: 0});
                     switch(arg){
                         case "no_genotypes":
                             e_overlay.html('<div><p><b>It Appears You Have No Genotypes<b/><br/><br/>'+

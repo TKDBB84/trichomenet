@@ -70,6 +70,8 @@ $stmt_get_leaf_cords->closeCursor();
 
     $(document).ready(function(){
         $('#overlay').hide();
+        $("#next_button_div").hide();
+        $('#del').css({'-webkit-appearance':'checkbox','-moz-appearance':'checkbox','-ms-appearance':'checkbox','-o-appearance':'checkbox'});
         <?php
             if($first_leaf){
                 echo 'overlay("first_leaf");';
@@ -85,6 +87,224 @@ $stmt_get_leaf_cords->closeCursor();
                echo 'addPoint(',$has_tip['x'],',',$has_tip['y'],',\'tip\');';
            }
         ?>
+          
+          
+          $('#auto_mark').on('click',function(){
+            var noise = $('#txt').val();
+            var confm = false;
+            if(sessionStorage.length > 1)
+                confm = confirm("This Will Clear All Points,\nDo You Want To Contiune?");
+            else confm = true;
+            if(confm){
+                loading(true);
+                noise = (noise * -1) + 255;
+                if(noise == 0) noise = 1;
+                var canvas = document.getElementById("myCanvas");
+                var context = canvas.getContext("2d");
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                var outter_x = new Array();
+                var outter_y = new Array();
+                var tip_x = -1;
+                var tip_y = -1;
+                var len = (sessionStorage.length-1) / 3;
+                for(var i=0;i<len;i++){
+                    var namX = 'X'+i.toString();
+                    var namY = 'Y'+i.toString();
+                    var typeName = 'type'+i.toString();
+                    var xCord = sessionStorage.getItem(namX);
+                    var yCord = sessionStorage.getItem(namY);
+                    var typeName = sessionStorage.getItem(typeName);
+                    if(typeName == 'outter'){
+                        outter_x.push(xCord);
+                        outter_y.push(yCord);
+                    }else if(typeName == 'tip'){
+                        tip_x = xCord;
+                        tip_y = yCord;
+                    }
+                }
+                sessionStorage.clear();
+                sessionStorage.setItem('option','outter');
+
+
+                $.post("ajaxfindcords.php",{'noise':noise,'curr_file':"<?php echo $file_name; ?>"},function(data){
+                    loading(false);
+                    var found_points = data;
+                    if(tip_x != -1 && tip_y != -1){
+                        addPoint(tip_x,tip_y,'tip');
+                    }
+                    for(j=0; j<outter_x.length;j++){
+                        addPoint(outter_x[j],outter_y[j],'outter');
+                    }
+                    for(i=0; i<found_points.length; i++) {
+                        var point = found_points[i];
+                        var do_point_add = true;
+
+                        for(j=0; j<outter_x.length && do_point_add;j++){
+                            if( getDistance(point.x,point.y,outter_x[j],outter_y[j]) <= 10 ){
+                                do_point_add = false;
+                            }
+                        }
+                        if(do_point_add)
+                            addPoint(point.x,point.y,'auto');
+                    }
+                    $('#tip').prop('disabled',false);
+                },'json');
+            }
+          });
+        
+        
+        $('#btn_clear').on('click',function(){
+             clearcanvas(false);
+        });
+        
+        $('#btn_save').on('click',function(){
+            var len = sessionStorage.length;
+            var max = (len - 1) / 3;
+            var foundtip = false;
+            var allX = new Array();
+            var allY = new Array();
+            var allType = new Array();
+            for(var i=0;i<=max;i++){
+                var namX = 'X'+i.toString();
+                var namY = 'Y'+i.toString();
+                var typeName = 'type'+i.toString();
+                var xCord = sessionStorage.getItem(namX);
+                var yCord = sessionStorage.getItem(namY);
+                var Type = sessionStorage.getItem(typeName);
+                    allX[i] = xCord;
+                    allY[i] = yCord;
+                    allType[i] = Type;
+                if(Type == 'tip'){
+                    foundtip = true;
+                }
+            }
+            if(!foundtip){
+                alert("You Must Mark A Tip Before Saving!");
+                return false;
+            }
+            var phpX = allX.toString();
+            var phpY = allY.toString();
+            var phpType = allType.toString();
+            //sendData(phpX,phpY,phpType);
+            $("#csv").html('');
+            $.post('saveLocations.php',{'Xdata':phpX,'Ydata':phpY,'Typedata':phpType,'leaf_id':"<?php echo $leaf_id; ?>"},function(data){
+                $("#csv").html(data);
+            },'text');
+        });
+        
+        $('#fiji_info').on('click',function(){
+            window.open('./fijiinfo.html','','width=375, height=350, left=200, top=200, screenX=200, screenY=200');
+            return false;
+        });
+        
+        $('#rng').on('change',function(){
+            $('#txt').val($('#rng').val());
+        });
+        
+        $('#myCanvas').on('click',function(event){
+            var type;
+            if($('#inner').is(':checked')){
+                type = 'inner';
+            }else if($('#outter').is(':checked')){
+                type = 'outter';
+            }else if($('#tip').is(':checked')){
+                type = 'tip';
+                $('#tip').prop('disabled',true);
+                $('#outter').prop('checked',true);
+            }else if(!$('#del').is(':checked')){
+                alert('You Must Select A Type Of Trichome');
+                return;
+            }
+            var c=document.getElementById("myCanvas");
+            var rect = c.getBoundingClientRect();
+            var x = Math.round(event.clientX - rect.left);
+            var y = Math.round(event.clientY - rect.top);
+
+            var removed = -1;
+            var len = (sessionStorage.length-1) / 3;
+            if($('#del').is(':checked')){
+
+                for(var i=0;i<len;i++){
+                    var namX = 'X'+i.toString();
+                    var namY = 'Y'+i.toString();
+                    var typeName = 'type'+i.toString();
+                    var xCord = sessionStorage.getItem(namX);
+                    var yCord = sessionStorage.getItem(namY);
+                    var typeName = sessionStorage.getItem(typeName);
+                    if( (+x >= +(+xCord - 5) &&  +x <= +(+xCord + 5)) && (+y >= +(+yCord - 5) &&  +y <= +(+yCord + 5) )){
+                        if(typeName == 'tip'){
+                            $('#tip').prop('disabled',false);
+                        }
+                        sessionStorage.removeItem(namX);
+                        sessionStorage.removeItem(namY);
+                        sessionStorage.removeItem(typeName);
+                        removed = i;
+                    }                
+                }
+                if(removed != -1){
+                    var newCount = 0;
+                    var allTypes = new Array();
+                    var allX = new Array();
+                    var allY = new Array();
+                    for(var i=0;i<len;i++){
+                        if(i != removed){
+                            var namX = 'X'+i.toString();
+                            var namY = 'Y'+i.toString();
+                            var typeName = 'type'+i.toString();
+                            var xCord = sessionStorage.getItem(namX);
+                            var yCord = sessionStorage.getItem(namY);
+                            var typeT = sessionStorage.getItem(typeName);
+                            allTypes[newCount] = typeT;
+                            allX[newCount] = xCord;
+                            allY[newCount++] = yCord;
+                        }
+                    }
+                    clearcanvas(true);
+                    for(var i=0;i<len-1;i++){
+                        addPoint(allX[i],allY[i],allTypes[i]);
+                    }
+                }
+            }else{
+                for(var i=0;i<len;i++){
+                    var namX = 'X'+i.toString();
+                    var namY = 'Y'+i.toString();
+                    var typeName = 'type'+i.toString();
+                    var xCord = sessionStorage.getItem(namX);
+                    var yCord = sessionStorage.getItem(namY);
+                    var typeName = sessionStorage.getItem(typeName);
+                    if( (+x >= +(+xCord - 5) &&  +x <= +(+xCord + 5)) && (+y >= +(+yCord - 5) &&  +y <= +(+yCord + 5) )){
+                        sessionStorage.removeItem(namX);
+                        sessionStorage.removeItem(namY);
+                        sessionStorage.removeItem(typeName);
+                        removed = i;
+                    }
+                }
+                if(removed != -1){
+                    var newCount = 0;
+                    var allTypes = new Array();
+                    var allX = new Array();
+                    var allY = new Array();
+                    for(var i=0;i<len;i++){
+                        if(i != removed){
+                            var namX = 'X'+i.toString();
+                            var namY = 'Y'+i.toString();
+                            var typeName = 'type'+i.toString();
+                            var xCord = sessionStorage.getItem(namX);
+                            var yCord = sessionStorage.getItem(namY);
+                            var typeT = sessionStorage.getItem(typeName);
+                            allTypes[newCount] = typeT;
+                            allX[newCount] = xCord;
+                            allY[newCount++] = yCord;
+                        }
+                    }
+                    clearcanvas(true);
+                    for(var i=0;i<len-1;i++){
+                        addPoint(allX[i],allY[i],allTypes[i]);
+                    }
+                }
+                addPoint(x,y,type);
+            }
+        });
     });
     
     function loading(swt){
@@ -99,82 +319,6 @@ $stmt_get_leaf_cords->closeCursor();
             canvas.style.backgroundImage="url('<?php echo $filepath; ?>')";
         }
     }
-    
-    function getAutoCords(noise){
-        var confm = false;
-        if(sessionStorage.length > 1)
-            confm = confirm("This Will Clear All Points,\nDo You Want To Contiune?");
-        else confm = true;
-        if(confm){
-            loading(true);
-            noise = (noise * -1) + 255;
-            if(noise == 0) noise = 1;
-            var canvas = document.getElementById("myCanvas");
-            var context = canvas.getContext("2d");
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            var outter_x = new Array();
-            var outter_y = new Array();
-            var tip_x = -1;
-            var tip_y = -1;
-            var len = (sessionStorage.length-1) / 3;
-            for(var i=0;i<len;i++){
-                var namX = 'X'+i.toString();
-                var namY = 'Y'+i.toString();
-                var typeName = 'type'+i.toString();
-                var xCord = sessionStorage.getItem(namX);
-                var yCord = sessionStorage.getItem(namY);
-                var typeName = sessionStorage.getItem(typeName);
-                if(typeName == 'outter'){
-                    outter_x.push(xCord);
-                    outter_y.push(yCord);
-                }else if(typeName == 'tip'){
-                    tip_x = xCord;
-                    tip_y = yCord;
-                }
-            }
-            sessionStorage.clear();
-            sessionStorage.setItem('option','outter');
-            var xmlhttp;
-            if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-                xmlhttp=new XMLHttpRequest();
-            }else{// code for IE6, IE5
-                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-            }
-            xmlhttp.onreadystatechange=function(){
-                if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                    loading(false);
-                    var points_returned=xmlhttp.responseText;
-                    var e = document.getElementById('shapes');
-                    var found_points = jQuery.parseJSON(points_returned);
-                    if(tip_x != -1 && tip_y != -1){
-                        addPoint(tip_x,tip_y,'tip');
-                    }
-                    for(j=0; j<outter_x.length;j++){
-                        addPoint(outter_x[j],outter_y[j],'outter');
-                    }
-                    for(i=0; i<found_points.length; i++) {
-                        var point = found_points[i];
-                        var addpoint = true;
-                        
-                        for(j=0; j<outter_x.length && addpoint;j++){
-                            if( getDistance(point.x,point.y,outter_x[j],outter_y[j]) <= 10 ){
-                                addpoint = false;
-                            }
-                        }
-                        if(addpoint)
-                            addPoint(point.x,point.y,'auto');
-                    }
-                    document.getElementById('tip').disabled = false;
-                }
-            }
-        var noise = encodeURIComponent(noise);
-        var curr_file=encodeURIComponent("<?php echo $file_name; ?>");
-        var parameters="noise="+noise+"&curr_file="+curr_file;
-        xmlhttp.open("POST", "ajaxfindcords.php", true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xmlhttp.send(parameters);
-        }
-    }
       
     function getDistance(x1,y1,x2,y2){
         var xs = 0;
@@ -185,130 +329,10 @@ $stmt_get_leaf_cords->closeCursor();
         ys = ys * ys;
        return Math.sqrt( xs + ys );
     }
-      
-    function printValue(sliderID, textbox) {
-            var x = document.getElementById(textbox);
-            var y = document.getElementById(sliderID);
-            x.value = y.value;
-        }
-    
-  
-    
-    function draw(event){
-        var inner = document.getElementById("inner");
-        var outter = document.getElementById("outter");
-        var tip = document.getElementById("tip");
-        var chkbx = document.getElementById("del");
-        var type;
-        if(inner.checked){
-            type = 'inner';
-        }else if(outter.checked){
-            type = 'outter';
-        }else if(tip.checked){
-            type = 'tip';
-            tip.checked = false;
-            outter.checked = true;
-        }else if(!chkbx.checked){
-            alert("Please Choose Inner Or Outer");
-            return;
-        }
-        var c=document.getElementById("myCanvas");
-        var ctx=c.getContext("2d");
-        var rect = c.getBoundingClientRect();
-        var x = Math.round(event.clientX - rect.left);
-        var y = Math.round(event.clientY - rect.top);
-        
-        var removed = -1;
-        var len = (sessionStorage.length-1) / 3;
-        if(chkbx.checked){
-            
-            for(var i=0;i<len;i++){
-                var namX = 'X'+i.toString();
-                var namY = 'Y'+i.toString();
-                var typeName = 'type'+i.toString();
-                var xCord = sessionStorage.getItem(namX);
-                var yCord = sessionStorage.getItem(namY);
-                var typeName = sessionStorage.getItem(typeName);
-                if( (+x >= +(+xCord - 5) &&  +x <= +(+xCord + 5)) && (+y >= +(+yCord - 5) &&  +y <= +(+yCord + 5) )){
-                    if(typeName == 'tip'){
-                        document.getElementById('tip').disabled = false;
-                    }
-                    sessionStorage.removeItem(namX);
-                    sessionStorage.removeItem(namY);
-                    sessionStorage.removeItem(typeName);
-                    removed = i;
-                }                
-            }
-            if(removed != -1){
-                var newCount = 0;
-                var allTypes = new Array();
-                var allX = new Array();
-                var allY = new Array();
-                for(var i=0;i<len;i++){
-                    if(i != removed){
-                        var namX = 'X'+i.toString();
-                        var namY = 'Y'+i.toString();
-                        var typeName = 'type'+i.toString();
-                        var xCord = sessionStorage.getItem(namX);
-                        var yCord = sessionStorage.getItem(namY);
-                        var typeT = sessionStorage.getItem(typeName);
-                        allTypes[newCount] = typeT;
-                        allX[newCount] = xCord;
-                        allY[newCount++] = yCord;
-                    }
-                }
-                clearmything(true);
-                for(var i=0;i<len-1;i++){
-                    addPoint(allX[i],allY[i],allTypes[i]);
 
-                }
-            }
-        }else{
-            for(var i=0;i<len;i++){
-                var namX = 'X'+i.toString();
-                var namY = 'Y'+i.toString();
-                var typeName = 'type'+i.toString();
-                var xCord = sessionStorage.getItem(namX);
-                var yCord = sessionStorage.getItem(namY);
-                var typeName = sessionStorage.getItem(typeName);
-                if( (+x >= +(+xCord - 5) &&  +x <= +(+xCord + 5)) && (+y >= +(+yCord - 5) &&  +y <= +(+yCord + 5) )){
-                    sessionStorage.removeItem(namX);
-                    sessionStorage.removeItem(namY);
-                    sessionStorage.removeItem(typeName);
-                    removed = i;
-                }
-            }
-            if(removed != -1){
-                var newCount = 0;
-                var allTypes = new Array();
-                var allX = new Array();
-                var allY = new Array();
-                for(var i=0;i<len;i++){
-                    if(i != removed){
-                        var namX = 'X'+i.toString();
-                        var namY = 'Y'+i.toString();
-                        var typeName = 'type'+i.toString();
-                        var xCord = sessionStorage.getItem(namX);
-                        var yCord = sessionStorage.getItem(namY);
-                        var typeT = sessionStorage.getItem(typeName);
-                        allTypes[newCount] = typeT;
-                        allX[newCount] = xCord;
-                        allY[newCount++] = yCord;
-                    }
-                }
-                clearmything(true);
-                for(var i=0;i<len-1;i++){
-                    addPoint(allX[i],allY[i],allTypes[i]);
-
-                }
-            }
-            addPoint(x,y,type);
-        }
-    }
-
-    function clearmything(clrsession){
+    function clearcanvas(is_confirmed){
         var confm = true;
-        if(clrsession == false){
+        if(!is_confirmed){
             confm = confirm("Are You Sure You\n\nWant To Clear?")}
         if(confm){
             var option = sessionStorage.getItem('option');
@@ -320,88 +344,8 @@ $stmt_get_leaf_cords->closeCursor();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, c.width, c.height);
             ctx.restore();
-            document.getElementById('tip').disabled = false;
+            $('#tip').prop('disabled',false);
         }
-    }
-        
-    function saveIt(){
-        var len = sessionStorage.length;
-        var max = (len - 1) / 3;
-        var foundtip = false;
-        var allX = new Array();
-        var allY = new Array();
-        var allType = new Array();
-        for(var i=0;i<=max;i++){
-            var namX = 'X'+i.toString();
-            var namY = 'Y'+i.toString();
-            var typeName = 'type'+i.toString();
-            var xCord = sessionStorage.getItem(namX);
-            var yCord = sessionStorage.getItem(namY);
-            var Type = sessionStorage.getItem(typeName);
-                allX[i] = xCord;
-                allY[i] = yCord;
-                allType[i] = Type;
-            if(Type == 'tip'){
-                foundtip = true;
-            }
-        }
-        if(!foundtip){
-            alert("You Must Mark A Tip Before Saving!");
-            return false;
-        }
-        var phpX = allX.toString();
-        var phpY = allY.toString();
-        var phpType = allType.toString();
-        sendData(phpX,phpY,phpType);
-        
-    }
-    
-
-    function sendData(Xdata,Ydata,Typedata){
-        document.getElementById("csv").innerHTML = '';
-        var xmlhttp;
-        if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function(){
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-                    document.getElementById("csv").innerHTML = xmlhttp.responseText;
-            }
-        }
-        var X_data=encodeURIComponent(Xdata);
-        var Y_data=encodeURIComponent(Ydata);
-        var Type_data=encodeURIComponent(Typedata);
-        var leaf_id=encodeURIComponent("<?php echo $leaf_id; ?>");
-        var parameters="Xdata="+X_data+"&Ydata="+Y_data+"&Typedata="+Type_data+"&leaf_id="+leaf_id;
-        xmlhttp.open("POST", "saveLocations.php", true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xmlhttp.send(parameters);
-
-    }
-    
-    function unSelectRadio(){
-        del = document.getElementById("del");
-        if(del.checked){
-            outter = document.getElementById("outter");
-            inner = document.getElementById("inner");
-            outter.checked = false;
-            inner.checked = false;
-        }else{
-            var which = sessionStorage.getItem('option');
-            document.getElementById(which).checked = true;
-        }
-    }
-    
-    function unCheckDelete(){
-        document.getElementById("del").checked = false;
-        outter = document.getElementById("outter");
-        inner = document.getElementById("inner");
-        if(inner.checked)
-            sessionStorage.setItem('option','inner');
-        else
-            sessionStorage.setItem('option','outter');
     }
     
     function addPoint(x,y,type){
@@ -415,7 +359,7 @@ $stmt_get_leaf_cords->closeCursor();
             ctx.strokeStyle = '#0ff';
         }else if( type === 'tip'){
             ctx.strokeStyle = '#0f0';
-            document.getElementById('tip').disabled = true;
+            $("#tip").prop('disabled',true);
         }else{
             alert("An Error Has Occured");
             return;
@@ -436,58 +380,46 @@ $stmt_get_leaf_cords->closeCursor();
     }
     
     function walkthrough(step){
+        var outline_on = {'outline':'3px dotted red'};
+        var outline_off = {'outline':'none'};
         switch(step){
             case 1:
-                document.getElementById('next_button_div').style.display = "block";
-                document.getElementById('next_button_div').style.visibility = "visibile";
-                document.getElementById('tip_div').style.outline = "3px dotted red";
-                document.getElementById("outter_div").style.outline = "none";
-                document.getElementById("inner_div").style.outline = "none";
-                document.getElementById('btn_stp2').style.display = "block";
-                document.getElementById('btn_stp2').style.visibility = "visibile";
-                document.getElementById('btn_stp3').style.display = "none";
-                document.getElementById('btn_stp3').style.visibility = "invisibile";
-                document.getElementById('btn_stp4').style.display = "none";
-                document.getElementById('btn_stp4').style.visibility = "invisibile";
+                $('#next_button_div').show();
+                $('#tip_div').css(outline_on);
+                $('#outter_div').css(outline_off);
+                $('#inner_div').css(outline_off);
+                $('#btn_stp2').show();
+                $('#btn_stp3').hide();
+                $('#btn_stp4').hide();
                 overlay();
                 overlay("first_step");
                 break;
             case 2:
-                document.getElementById('tip_div').style.outline = "none";
-                document.getElementById("outter_div").style.outline = "3px dotted red";
-                document.getElementById("inner_div").style.outline = "none";
-                document.getElementById('btn_stp2').style.display = "none";
-                document.getElementById('btn_stp2').style.visibility = "invisibile";
-                document.getElementById('btn_stp3').style.display = "block";
-                document.getElementById('btn_stp3').style.visibility = "visibile";
-                document.getElementById('btn_stp4').style.display = "none";
-                document.getElementById('btn_stp4').style.visibility = "invisibile";
+                $('#tip_div').css(outline_off);
+                $('#outter_div').css(outline_on);
+                $('#inner_div').css(outline_off);
+                $('#btn_stp2').hide();
+                $('#btn_stp3').show();
+                $('#btn_stp4').hide();
                 overlay("second_step");
                 break;
             case 3:
-                document.getElementById('tip_div').style.outline = "none";
-                document.getElementById("outter_div").style.outline = "none";
-                document.getElementById("inner_div").style.outline = "3px dotted red";
-                document.getElementById('btn_stp2').style.display = "none";
-                document.getElementById('btn_stp2').style.visibility = "invisibile";
-                document.getElementById('btn_stp3').style.display = "none";
-                document.getElementById('btn_stp3').style.visibility = "invisibile";
-                document.getElementById('btn_stp4').style.display = "block";
-                document.getElementById('btn_stp4').style.visibility = "visibile";
+                $('#tip_div').css(outline_off);
+                $('#outter_div').css(outline_off);
+                $('#inner_div').css(outline_on);
+                $('#btn_stp2').hide();
+                $('#btn_stp3').hide();
+                $('#btn_stp4').show();
                 overlay("third_step");
                 break;
            case 4:
-                document.getElementById('next_button_div').style.display = "none";
-                document.getElementById('next_button_div').style.visibility = "invisibile";
-                document.getElementById('tip_div').style.outline = "none";
-                document.getElementById("outter_div").style.outline = "none";
-                document.getElementById("inner_div").style.outline = "none";
-                document.getElementById('btn_stp2').style.display = "none";
-                document.getElementById('btn_stp2').style.visibility = "invisibile";
-                document.getElementById('btn_stp3').style.display = "none";
-                document.getElementById('btn_stp3').style.visibility = "invisibile";
-                document.getElementById('btn_stp4').style.display = "none";
-                document.getElementById('btn_stp4').style.visibility = "invisibile";
+                $('#next_button_div').hide();
+                $('#tip_div').css(outline_off);
+                $('#outter_div').css(outline_off);
+                $('#inner_div').css(outline_off);
+                $('#btn_stp2').hide();
+                $('#btn_stp3').hide();
+                $('#btn_stp4').hide();
                 overlay("forth_step");
                 break;
         }
@@ -495,92 +427,92 @@ $stmt_get_leaf_cords->closeCursor();
     
     
     function overlay(arg){
-                var e_overlay = $("#overlay");
-                if(e_overlay.is(':visible')){
-                    if($.browser.msie && parseInt($.browser.version) < 9)
-                        $('html').css('overflow','auto');
-                    $('body').css('overflow','auto').css('padding-right','0');
-                }else{
-                    window.scroll(0,0);
-                    switch(arg){
-                        case "first_leaf":
-                            e_overlay.html('<div><p><b>It Looks Like This Is Your First Leaf!<b/><br/><br/>'+
-                                          'Would You Like Us To Walk You Through How '+
-                                          'To Mark Trichomes </p>'+
-                                          '<button type="button" onClick="walkthrough(1);">'+
-                                          'Yes</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">No</button></div>');
-                            break;
-                        case "first_step":
-                            e_overlay.html('<div><p><b>Great!<b/><br/><br/>'+
-                                          '<p>First we start by marking the `Tip` of the leaf.  '+
-                                          'Be consistent as this is the point that will be used '+
-                                          'to align this leaf with other leaves for analysis.</p>' +
-                                          '<p>Select `Tip` from the settings below and click on the '+
-                                          'area of the leaf you wish to be the tip. A green circle '+
-                                          'will appear marking your selection. If you are unhappy '+
-                                          'with its position, you may delete it by choosing the '+
-                                          '`delete` option from the menu and selecting the mark '+
-                                          'you desire to remove.</p>'+
-                                          '<p>When you are satisfied with your selection, please click the [Next Step] button</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>');
-                            break;
-                        case "second_step":
-                            e_overlay.html('<div><p><b>Good<b/><br/><br/>'+
-                                          '<p>Now you will be asked to mark the marginal trichomes on your leaf.</p>'+
-                                          '<p>Select `Outer` from the menu and click on the relevant trichomes. '+
-                                          'These marks will appear in red and may be deleted as previously described.</p>'+
-                                          '<p>It is important to mark marginal trichomes in order as they are used to '+
-                                          'draw the leaf edge during analysis.  Marking trichomes out of order will '+
-                                          'cause the leaf edge to appear jagged joining the trichomes in the order '+
-                                          'they were clicked. If necessary, delete marked trichomes as previously described.</p>'+
-                                          '<p>When you are done, click the [Next Step] button</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>');
-                            break;
-                        case "third_step":
-                            e_overlay.html('<div><br/>'+
-                                          '<p>Now you can mark laminal trichomes.</p>'+
-                                          '<p>Choose `inner` from the menu and click on all '+
-                                          'the laminal trichomes. Order is not important.</p>'+
-                                          '<p>Alternatively, you may choose to use the auto '+
-                                          'mark trichome function by choosing a sensitivity '+
-                                          'level and clicking [Find Trichomes]. This will clear '+
-                                          'any laminal trichomes you have chosen but will leave '+
-                                          'marginal and leaf tip selections intact.</p>'+
-                                          '<p>Once automatic marking has finished, you may '+
-                                          'choose to add or remove trichome marks automatically '+
-                                          'before saving your work.</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>');
-                            break;
-                        case "forth_step":
-                            e_overlay.html('<div><p><b>Congratulations<b/><br/><br/>'+
-                                          '<p>You have marked the trichomes in your first '+
-                                          'leaf. Feel free to experiment using combinations '+
-                                          'of automatic &amp; manual trichome marking at '+
-                                          'different sensitivities to see what works best '+
-                                          'for your workflow.</p><p>Be sure to save your work '+
-                                          'by clicking the [save] button at the bottom of the page <p>'+
-                                          '<p>Enjoy.</p>'+
-                                          '<button type="button" onClick="overlay();">OK</button></div>');
-                            break;
-                        
-                        case "no_points":
-                            e_overlay.html('<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
-                                          'You Cannot Analyze Leaves Without Points</p>'+
-                                          '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
-                                          'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
-                            break;
-                    if($.browser.msie && parseInt($.browser.version) < 9)
-                        $('html').css('overflow','hidden');
-                    $('body').css('overflow','hidden').css('padding-right','17px');
-                }
-                e_overlay.toggle();
-                }
+        var e_overlay = $("#overlay");
+        if(e_overlay.is(':visible')){
+            if($.browser.msie && parseInt($.browser.version) < 9)
+                $('html').css('overflow','auto');
+            $('body').css('overflow','auto').css('padding-right','0');
+        }else{
+            $("html,body").animate({scrollTop: 0});
+            switch(arg){
+                case "first_leaf":
+                    e_overlay.html('<div><p><b>It Looks Like This Is Your First Leaf!<b/><br/><br/>'+
+                                  'Would You Like Us To Walk You Through How '+
+                                  'To Mark Trichomes </p>'+
+                                  '<button type="button" onClick="walkthrough(1);">'+
+                                  'Yes</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">No</button></div>');
+                    break;
+                case "first_step":
+                    e_overlay.html('<div><p><b>Great!<b/><br/><br/>'+
+                                  '<p>First we start by marking the `Tip` of the leaf.  '+
+                                  'Be consistent as this is the point that will be used '+
+                                  'to align this leaf with other leaves for analysis.</p>' +
+                                  '<p>Select `Tip` from the settings below and click on the '+
+                                  'area of the leaf you wish to be the tip. A green circle '+
+                                  'will appear marking your selection. If you are unhappy '+
+                                  'with its position, you may delete it by choosing the '+
+                                  '`delete` option from the menu and selecting the mark '+
+                                  'you desire to remove.</p>'+
+                                  '<p>When you are satisfied with your selection, please click the [Next Step] button</p>'+
+                                  '<button type="button" onClick="overlay();">OK</button></div>');
+                    break;
+                case "second_step":
+                    e_overlay.html('<div><p><b>Good<b/><br/><br/>'+
+                                  '<p>Now you will be asked to mark the marginal trichomes on your leaf.</p>'+
+                                  '<p>Select `Outer` from the menu and click on the relevant trichomes. '+
+                                  'These marks will appear in red and may be deleted as previously described.</p>'+
+                                  '<p>It is important to mark marginal trichomes in order as they are used to '+
+                                  'draw the leaf edge during analysis.  Marking trichomes out of order will '+
+                                  'cause the leaf edge to appear jagged joining the trichomes in the order '+
+                                  'they were clicked. If necessary, delete marked trichomes as previously described.</p>'+
+                                  '<p>When you are done, click the [Next Step] button</p>'+
+                                  '<button type="button" onClick="overlay();">OK</button></div>');
+                    break;
+                case "third_step":
+                    e_overlay.html('<div><br/>'+
+                                  '<p>Now you can mark laminal trichomes.</p>'+
+                                  '<p>Choose `inner` from the menu and click on all '+
+                                  'the laminal trichomes. Order is not important.</p>'+
+                                  '<p>Alternatively, you may choose to use the auto '+
+                                  'mark trichome function by choosing a sensitivity '+
+                                  'level and clicking [Find Trichomes]. This will clear '+
+                                  'any laminal trichomes you have chosen but will leave '+
+                                  'marginal and leaf tip selections intact.</p>'+
+                                  '<p>Once automatic marking has finished, you may '+
+                                  'choose to add or remove trichome marks automatically '+
+                                  'before saving your work.</p>'+
+                                  '<button type="button" onClick="overlay();">OK</button></div>');
+                    break;
+                case "forth_step":
+                    e_overlay.html('<div><p><b>Congratulations<b/><br/><br/>'+
+                                  '<p>You have marked the trichomes in your first '+
+                                  'leaf. Feel free to experiment using combinations '+
+                                  'of automatic &amp; manual trichome marking at '+
+                                  'different sensitivities to see what works best '+
+                                  'for your workflow.</p><p>Be sure to save your work '+
+                                  'by clicking the [save] button at the bottom of the page <p>'+
+                                  '<p>Enjoy.</p>'+
+                                  '<button type="button" onClick="overlay();">OK</button></div>');
+                    break;
+
+                case "no_points":
+                    e_overlay.html('<div><p><b>It Appears You Have Not Add Any Points To Any Leaves<b/><br/><br/>'+
+                                  'You Cannot Analyze Leaves Without Points</p>'+
+                                  '<button type="button" onClick="overlay();window.location = \'./addLeafs.php\';">'+
+                                  'Take Me To Add Leaves Page</button>&nbsp;&nbsp;&nbsp;<button type="button" onclick="overlay();">Ignore</button></div>');
+                    break;
             }
+            if($.browser.msie && parseInt($.browser.version) < 9)
+                $('html').css('overflow','hidden');
+            $('body').css('overflow','hidden').css('padding-right','17px');
+        }
+        e_overlay.toggle();
+    }
 </script>
 </head>
 
 
-<body onload=""> 
+<body> 
 <div class="header">
             <div class="header" id="logo"></div>
             <div class="header" id="logo_text">
@@ -621,11 +553,11 @@ $stmt_get_leaf_cords->closeCursor();
             </div>
             <div id="main_contents" style="margin-left: 0px;">
                 <div id="framed" style="margin-left: 0px; margin-right: 0px;">
-                    <canvas id="myCanvas" onmousedown="draw(event);" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style=" background:url(<?php echo $filepath; ?>);"></canvas>
+                    <canvas id="myCanvas" height="<?php echo $height; ?>" width="<?php echo $width; ?>" style=" background:url(<?php echo $filepath; ?>);"></canvas>
                     <br/>
                     <?php 
                     if($first_leaf){
-                        echo '<div id="next_button_div" style="display:none;">
+                        echo '<div id="next_button_div">
                                     <br/><br/>
                                     <button type="button" id="btn_stp2" onClick="walkthrough(2);">Next Step</button>
                                     <button type="button" id="btn_stp3" onClick="walkthrough(3);">Next Step</button>
@@ -636,21 +568,21 @@ $stmt_get_leaf_cords->closeCursor();
                     ?>
                     <div id="settings">
                     Automatic Marking Sensitivity:<br/>
-                        -<input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;" onChange="printValue('rng','txt');"/>+
+                        -<input id="rng" type="range" min="0" max="255" value="150" step="5" style="width: <?php echo $width/2; ?>;"/>+
                         <input  id="txt" type="text" value="150" size="3" readonly/>
-                        <button onClick="getAutoCords(document.getElementById('txt').value)">Auto Mark Trichomes</button>
+                        <button id="auto_mark">Auto Mark Trichomes</button>
                         <span style="vertical-align: text-top; font-size: .75em;">
-                            <a href="./fijiinfo.html" onclick="window.open('./fijiinfo.html','','width=375, height=350, left=200, top=200, screenX=200, screenY=200');return false;">
+                            <a href="./fijiinfo.html" id="fiji_info">
                                 ?
                             </a>
                         </span>
                         <br/>
-                        <div id="tip_div" style="width: 125px;"><input type="radio" id='tip' name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/><label id="lbltip" for="tip">Mark Leaf Tip</label></div>
-                        <div id="outter_div" style="width: 125px;"><input type="radio" id="outter" name="type" onclick='unCheckDelete();' <?php if($has_tip['has']) echo 'checked'; ?>><label id="lbloutter" for="outter">Marginal</label></div>
-                        <div id="inner_div" style="width: 125px;"><input type="radio" id="inner" name="type" onclick='unCheckDelete();'><label id="lblinner" for="inner">Laminal</label></div>
-                        <div id="del_div" style="width: 125px;"><input type="checkbox" id='del' onclick='unSelectRadio();'/><label id="lbldel" for="del">Delete</label></div>
-                        <button onclick="clearmything(false);">Clear</button>
-                        <button onclick="saveIt();">Save</button>
+                        <div id="tip_div" style="width: 125px;"><input type="radio" id='tip' name="type" <?php if($has_tip['has']) echo 'disabled'; else echo 'checked'; ?>/><label id="lbltip" for="tip">Mark Leaf Tip</label></div>
+                        <div id="outter_div" style="width: 125px;"><input type="radio" id="outter" name="type" <?php if($has_tip['has']) echo 'checked'; ?>><label id="lbloutter" for="outter">Marginal</label></div>
+                        <div id="inner_div" style="width: 125px;"><input type="radio" id="inner" name="type"><label id="lblinner" for="inner">Laminal</label></div>
+                        <div id="del_div" style="width: 125px;"><input type="radio" id='del' name="type"/><label id="lbldel" for="del">Delete</label></div>
+                        <button id="btn_clear">Clear</button>
+                        <button id="btn_save">Save</button>
                         <div id="csv"></div>
                         <em>If leaf image appears too large, you may zoom out your browser to fit better.</em>
                         <br/><br/><br/><br/><a href="./addLeafs.php">Return To Leaf List</a>
